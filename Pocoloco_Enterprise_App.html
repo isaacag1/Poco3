@@ -1,0 +1,2402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pocoloco Enterprise</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0E1521;
+  --bg2:#111827;
+  --surface:rgba(255,255,255,0.045);
+  --surface2:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.09);
+  --border2:rgba(255,255,255,0.15);
+  --text:#E8EDF5;
+  --text2:rgba(232,237,245,0.60);
+  --text3:rgba(232,237,245,0.33);
+  --blue:#4A9EFF;
+  --blue-dim:rgba(74,158,255,0.14);
+  --green:#34C759;
+  --green-dim:rgba(52,199,89,0.12);
+  --amber:#FF9F0A;
+  --amber-dim:rgba(255,159,10,0.12);
+  --red:#FF6B6B;
+  --red-dim:rgba(255,107,107,0.12);
+  --purple:#A78BFA;
+  --purple-dim:rgba(167,139,250,0.12);
+  --teal:#5AC8FA;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Figtree',sans-serif;overflow:hidden;}
+body::before{content:'';position:fixed;top:-20vh;left:50%;transform:translateX(-50%);width:900px;height:500px;
+  background:radial-gradient(ellipse,rgba(74,158,255,0.09) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* ═══════════════════════════════
+   SCREEN SYSTEM
+═══════════════════════════════ */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;
+  transition:opacity .32s ease,transform .32s cubic-bezier(.22,1,.36,1);will-change:opacity,transform;}
+.screen.hidden{opacity:0;pointer-events:none;}
+#homeScreen.hidden{transform:translateX(-30px);}
+#cashierScreen.hidden{transform:translateX(30px);}
+
+/* ═══════════════════════════════
+   NAV
+═══════════════════════════════ */
+nav{position:relative;z-index:100;display:flex;align-items:center;padding:0 28px;height:56px;
+  background:rgba(14,21,33,0.90);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+  border-bottom:1px solid var(--border);flex-shrink:0;gap:0;}
+.brand{display:flex;align-items:center;gap:10px;margin-right:28px;}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--blue);display:flex;align-items:center;
+  justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:800;color:#fff;letter-spacing:.5px;}
+.brand-name{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.2px;}
+.brand-sub{font-size:10px;color:var(--text2);margin-top:1px;}
+
+/* NAV TABS */
+.nav-tabs{display:flex;gap:2px;flex:1;}
+.nav-tab{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text3);
+  cursor:pointer;transition:all .18s;border:none;background:transparent;font-family:'Figtree',sans-serif;}
+.nav-tab:hover{color:var(--text2);background:rgba(255,255,255,.06);}
+.nav-tab.active{color:var(--text);background:rgba(255,255,255,.10);}
+
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.sync-badge{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green);
+  background:var(--green-dim);border:1px solid rgba(48,209,88,.22);border-radius:100px;padding:4px 10px;}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* DATE PILL */
+.date-pill{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border2);
+  border-radius:100px;padding:5px 12px 5px 9px;cursor:pointer;transition:all .18s;position:relative;}
+.date-pill:hover{background:rgba(255,255,255,.13);}
+.dp-icon{font-size:13px;}.dp-text{font-size:12px;font-weight:500;}.dp-edit{font-size:10px;color:var(--blue);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.date-drop{position:absolute;top:calc(100% + 8px);right:0;background:rgba(18,26,42,0.98);
+  backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid var(--border2);
+  border-radius:14px;padding:14px;width:248px;box-shadow:0 20px 60px rgba(0,0,0,.8);z-index:300;
+  opacity:0;pointer-events:none;transform:translateY(-8px) scale(.97);transition:all .22s cubic-bezier(.34,1.56,.64,1);}
+.date-drop.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1);}
+.drop-lbl{font-size:10px;color:var(--text2);font-weight:700;letter-spacing:.8px;text-transform:uppercase;display:block;margin-bottom:7px;}
+.drop-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border2);border-radius:9px;
+  padding:9px 11px;font-family:'Figtree',sans-serif;font-size:13px;font-weight:500;color:var(--text);outline:none;color-scheme:dark;}
+.drop-inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim);}
+.drop-quick{display:flex;gap:7px;margin-top:9px;}
+.dq{flex:1;padding:6px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;
+  font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;}
+.dq:hover{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);}
+
+/* ═══════════════════════════════
+   HOME — TABS CONTENT
+═══════════════════════════════ */
+.home-body{flex:1;overflow-y:auto;position:relative;z-index:1;}
+.tab-content{display:none;padding:24px 28px 40px;max-width:1080px;margin:0 auto;}
+.tab-content.active{display:block;}
+
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.r0{animation:rise .5s cubic-bezier(.22,1,.36,1) both;}
+.r1{animation:rise .5s .06s cubic-bezier(.22,1,.36,1) both;}
+.r2{animation:rise .5s .12s cubic-bezier(.22,1,.36,1) both;}
+.r3{animation:rise .5s .18s cubic-bezier(.22,1,.36,1) both;}
+.r4{animation:rise .5s .24s cubic-bezier(.22,1,.36,1) both;}
+
+/* ── PAGE HEAD ── */
+.pg-head{margin-bottom:26px;}
+.pg-head h1{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.15;}
+.pg-head h1 em{font-style:normal;color:var(--blue);}
+.pg-head p{font-size:13px;color:var(--text2);margin-top:5px;}
+
+/* ── STATUS BAR ── */
+.status-bar{display:flex;align-items:center;gap:6px;margin-bottom:14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;flex-wrap:wrap;}
+.sb-item{display:flex;align-items:center;gap:8px;padding:0 12px;border-right:1px solid var(--border);}
+.sb-item:first-child{padding-left:0;}
+.sb-item:last-child{border-right:none;}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sb-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;}
+.sb-val{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px;}
+.sb-val.blue{color:var(--blue);}.sb-val.green{color:var(--green);}.sb-val.amber{color:var(--amber);}.sb-val.red{color:var(--red);}
+.sb-meta{font-size:10px;color:var(--text3);margin-left:2px;}
+
+/* ── STOCK STRIP ── */
+.stock-strip{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ss-pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:8px 14px;cursor:pointer;transition:all .18s;flex:1;justify-content:center;}
+.ss-pill:hover{background:var(--surface2);}
+.ss-pill.ca:hover{border-color:rgba(74,158,255,.4);}
+.ss-pill.gh:hover{border-color:rgba(52,199,89,.4);}
+.ss-pill.su:hover{border-color:rgba(167,139,250,.4);}
+.ss-dot{width:7px;height:7px;border-radius:50%;}
+.ss-name{font-size:11px;font-weight:600;color:var(--text2);}
+.ss-count{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;}
+.ss-count.blue{color:var(--blue);}.ss-count.green{color:var(--green);}.ss-count.purple{color:var(--purple);}
+.ss-sub{font-size:10px;color:var(--text3);}
+
+/* ── HERO ROW ── */
+.hero-row{display:grid;grid-template-columns:1fr 300px;gap:11px;margin-bottom:11px;}
+
+.hero{background:var(--surface);border:1px solid rgba(10,132,255,.28);border-radius:22px;padding:36px;
+  cursor:pointer;transition:all .28s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;
+  background:radial-gradient(circle,rgba(10,132,255,.14),transparent 70%);pointer-events:none;}
+.hero:hover{transform:scale(1.012);border-color:rgba(10,132,255,.65);
+  box-shadow:0 0 60px rgba(10,132,255,.13),0 20px 60px rgba(0,0,0,.5);}
+.hero-chip{display:inline-flex;align-items:center;gap:5px;background:var(--blue-dim);
+  border:1px solid rgba(74,158,255,.25);border-radius:100px;padding:3px 11px;
+  font-size:10px;font-weight:700;color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:16px;}
+.hero-emoji{font-size:54px;display:block;margin-bottom:14px;filter:drop-shadow(0 0 20px rgba(10,132,255,.40));}
+.hero h2{font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;}
+.hero p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:22px;}
+.hero p strong{color:var(--text);font-weight:600;}
+.hero-btn{display:inline-flex;align-items:center;gap:10px;background:var(--blue);border-radius:12px;
+  padding:14px 24px;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;
+  color:#fff;border:none;cursor:pointer;transition:all .2s;}
+.hero-btn:hover{background:#1A91FF;box-shadow:0 8px 26px rgba(10,132,255,.4);}
+.arr{transition:transform .2s;}.hero:hover .arr{transform:translateX(4px);}
+
+.side-stack{display:flex;flex-direction:column;gap:9px;}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;
+  cursor:pointer;display:flex;align-items:center;gap:11px;transition:all .2s cubic-bezier(.22,1,.36,1);flex:1;}
+.mc:hover{transform:translateX(4px);background:var(--surface2);border-color:var(--border2);}
+.mc.ex:hover{border-color:rgba(255,159,10,.4);background:var(--amber-dim);}
+.mc.db:hover{border-color:rgba(255,69,58,.4);background:var(--red-dim);}
+.mc.dp:hover{border-color:rgba(191,90,242,.4);background:var(--purple-dim);}
+.mc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.ia{background:var(--amber-dim);}.ir{background:var(--red-dim);}.ip{background:var(--purple-dim);}.ig{background:rgba(255,255,255,.06);}
+.mc-txt h3{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;margin-bottom:1px;}
+.mc-txt p{font-size:10px;color:var(--text2);line-height:1.35;}
+.mc-arr{margin-left:auto;font-size:16px;color:var(--text3);flex-shrink:0;transition:transform .2s;}
+.mc:hover .mc-arr{transform:translateX(3px);color:var(--text2);}
+
+/* ── BOTTOM ROW ── */
+.bot-row{margin-top:0;}
+
+/* ACTIVITY FEED */
+.act-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;}
+.act-head{font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--text2);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.live-tag{font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--green);background:var(--green-dim);
+  border:1px solid rgba(48,209,88,.28);border-radius:4px;padding:2px 7px;}
+.act-list{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.ai{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:11px;padding:11px 13px;
+  display:flex;flex-direction:column;gap:4px;transition:background .2s;}
+.ai:hover{background:rgba(255,255,255,.06);}
+.ai-top{display:flex;align-items:center;justify-content:space-between;}
+.a-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.a-dot.bl{background:var(--blue);}.a-dot.gr{background:var(--green);}.a-dot.am{background:var(--amber);}.a-dot.pu{background:var(--purple);}
+.a-time{font-size:10px;color:var(--text3);}
+.a-main{font-size:12px;font-weight:600;color:var(--text);line-height:1.35;}
+.a-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.a-amt{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;margin-top:4px;}
+
+
+/* ═══════════════════════════════
+   DASHBOARD TAB
+═══════════════════════════════ */
+.db-head{margin-bottom:24px;}
+.db-head h1{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.4px;}
+.db-head p{font-size:13px;color:var(--text2);margin-top:4px;}
+
+/* Summary row */
+.db-summary{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;}
+.db-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.db-card-icon{font-size:22px;margin-bottom:10px;}
+.db-card-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.9px;text-transform:uppercase;margin-bottom:5px;}
+.db-card-val{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1;margin-bottom:3px;}
+.db-card-sub{font-size:10px;color:var(--text3);}
+.db-card.c-blue .db-card-val{color:var(--blue);}
+.db-card.c-green .db-card-val{color:var(--green);}
+.db-card.c-amber .db-card-val{color:var(--amber);}
+.db-card.c-red .db-card-val{color:var(--red);}
+.db-card.c-purple .db-card-val{color:var(--purple);}
+.db-card-bar{position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 14px 14px;}
+.c-blue .db-card-bar{background:linear-gradient(90deg,var(--blue),transparent);}
+.c-green .db-card-bar{background:linear-gradient(90deg,var(--green),transparent);}
+.c-amber .db-card-bar{background:linear-gradient(90deg,var(--amber),transparent);}
+.c-red .db-card-bar{background:linear-gradient(90deg,var(--red),transparent);}
+.c-purple .db-card-bar{background:linear-gradient(90deg,var(--purple),transparent);}
+
+/* 4-col main dashboard */
+.db-main{display:grid;grid-template-columns:1.4fr 1fr 0.8fr 0.8fr;gap:12px;margin-bottom:12px;}
+.db-stock{margin-bottom:0;}
+.db-streams{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:0;}
+.debtors-scroll{max-height:300px;overflow-y:auto;}
+.stream-scroll{max-height:340px;overflow-y:auto;}
+.stream-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:8px;}
+.stream-row:last-child{border-bottom:none;}
+.stream-code{font-size:10px;font-weight:700;color:var(--text3);min-width:34px;letter-spacing:.3px;}
+.stream-name{font-size:11px;color:var(--text2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stream-qty{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;}
+.stream-qty.blue{color:var(--blue);}.stream-qty.green{color:var(--green);}.stream-qty.purple{color:var(--purple);}
+.stream-header{display:flex;align-items:center;gap:8px;padding:6px 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.stream-header-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.stream-header-name{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;}
+.stream-header-count{font-size:10px;color:var(--text3);margin-left:auto;}
+
+/* Section panels */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;}
+.panel-head{font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--text2);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.panel-count{font-size:10px;color:var(--text3);font-weight:600;text-transform:none;letter-spacing:0;}
+
+/* Debtors table */
+.dt-table{width:100%;border-collapse:collapse;}
+.dt-table th{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;
+  padding:0 0 8px;text-align:left;border-bottom:1px solid var(--border);}
+.dt-table th:last-child{text-align:right;}
+.dt-table td{padding:9px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;}
+.dt-table tr:last-child td{border-bottom:none;}
+.dt-table td:last-child{text-align:right;}
+.debtor-name{font-weight:600;color:var(--text);font-size:12px;}
+.debtor-contact{font-size:10px;color:var(--text3);margin-top:1px;}
+.debt-amt{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:var(--red);}
+
+/* Sales log — scrollable */
+.sales-scroll{max-height:280px;overflow-y:auto;margin:-4px -4px 0;padding:4px 4px 0;}
+.sales-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);gap:10px;}
+.sales-row:last-child{border-bottom:none;}
+.sale-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sale-item{flex:1;min-width:0;}
+.sale-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sale-meta{font-size:10px;color:var(--text3);margin-top:1px;}
+.sale-total{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--blue);flex-shrink:0;}
+
+/* Stock summary panels */
+.stock-summary-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;}
+.ssp-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ssp-dot{width:8px;height:8px;border-radius:50%;}
+.ssp-title{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;}
+.ssp-count{font-size:10px;color:var(--text3);margin-left:auto;}
+.stock-item-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;}
+.stock-item-row:last-child{border-bottom:none;}
+.si-code{color:var(--text3);font-size:10px;font-weight:600;min-width:36px;}
+.si-name{color:var(--text2);flex:1;margin:0 8px;}
+.si-qty{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;}
+.si-qty.blue{color:var(--blue);}.si-qty.green{color:var(--green);}.si-qty.purple{color:var(--purple);}
+
+/* Expense breakdown */
+.exp-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);}
+.exp-row:last-child{border-bottom:none;}
+.exp-row-left{display:flex;align-items:center;gap:8px;}
+.exp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.exp-type{font-size:12px;color:var(--text);}
+.exp-paid{font-size:10px;color:var(--text3);margin-top:1px;}
+.exp-amt{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--amber);}
+
+/* Deposits panel */
+.dep-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);}
+.dep-row:last-child{border-bottom:none;}
+.dep-name{font-size:12px;color:var(--text);font-weight:500;}
+.dep-date{font-size:10px;color:var(--text3);margin-top:1px;}
+.dep-amt{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--purple);}
+
+/* Bale selector */
+.bale-wrap{margin-bottom:14px;}
+.bale-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.9px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.bale-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.bale-btn{padding:9px;border-radius:9px;border:1.5px solid var(--border2);background:rgba(255,255,255,.05);
+  font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--text2);
+  cursor:pointer;transition:all .18s;text-align:center;}
+.bale-btn:hover{border-color:var(--blue);color:var(--text);}
+.bale-btn.selected{border-color:var(--blue);background:var(--blue-dim);color:var(--blue);}
+.cashier-body{flex:1;display:flex;min-height:0;overflow:hidden;}
+
+/* LEFT */
+.items-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);min-height:0;}
+.search-bar{padding:11px 13px;border-bottom:1px solid var(--border);background:rgba(10,16,28,0.40);flex-shrink:0;}
+.search-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border2);border-radius:9px;
+  padding:9px 13px;font-family:'Figtree',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .15s;}
+.search-inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim);}
+.search-inp::placeholder{color:var(--text3);}
+.cat-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.cat-tab-btn{flex:1;padding:10px 8px;border:none;cursor:pointer;background:transparent;
+  font-family:'Figtree',sans-serif;font-weight:600;font-size:12px;color:var(--text3);
+  border-bottom:2px solid transparent;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.cat-tab-btn.ac-canada{color:#7BB8FF;border-bottom-color:var(--blue);background:rgba(74,158,255,.07);}
+.cat-tab-btn.ac-super{color:#7BB8FF;border-bottom-color:var(--blue);background:rgba(74,158,255,.07);}
+.cat-tab-btn.ac-champion{color:#FFD60A;border-bottom-color:#FFD60A;background:rgba(255,214,10,.07);}
+.cat-tab-btn.ac-ghana{color:#6EDA8E;border-bottom-color:var(--green);background:rgba(52,199,89,.07);}
+.cat-tab-btn.ac-supply{color:#C4B5FD;border-bottom-color:var(--purple);background:rgba(167,139,250,.07);}
+.cat-tab-btn:hover:not([class*="ac-"]){color:var(--text2);background:rgba(255,255,255,.04);}
+.tab-sub-lbl{font-size:9px;opacity:.65;}
+.item-grid{flex:1;overflow-y:auto;padding:11px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;align-content:start;}
+.item-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:11px;padding:12px 10px;
+  cursor:pointer;text-align:left;transition:all .15s;position:relative;font-family:'Figtree',sans-serif;}
+.item-btn:hover{background:rgba(255,255,255,.09);border-color:var(--border2);transform:scale(1.025);}
+.item-btn.ic-canada{background:rgba(74,158,255,.11);border-color:rgba(74,158,255,.42);}
+.item-btn.ic-super{background:rgba(74,158,255,.11);border-color:rgba(74,158,255,.42);}
+.item-btn.ic-champion{background:rgba(255,214,10,.08);border-color:rgba(255,214,10,.35);}
+.item-btn.ic-ghana{background:rgba(52,199,89,.09);border-color:rgba(52,199,89,.38);}
+.item-btn.ic-supply{background:rgba(167,139,250,.09);border-color:rgba(167,139,250,.38);}
+.icode{font-size:10px;font-weight:700;letter-spacing:.4px;margin-bottom:4px;}
+.icode.canada{color:var(--blue);}.icode.super{color:var(--blue);}.icode.champion{color:#FFD60A;}.icode.ghana{color:var(--green);}.icode.supply{color:var(--purple);}
+.iname{font-size:11px;color:var(--text);font-weight:500;line-height:1.35;}
+.item-group-header{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:8px;
+  padding:8px 4px 6px;
+  margin-top:6px;
+  border-bottom:1px solid var(--border);
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);}
+.item-group-header:first-child{margin-top:0;}
+.item-group-header .gh-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:auto;letter-spacing:.3px;}
+.gh-super .gh-pill{background:rgba(74,158,255,.15);color:var(--blue);}
+.gh-champion .gh-pill{background:rgba(255,214,10,.12);color:#FFD60A;}
+.gh-supply .gh-pill{background:rgba(167,139,250,.15);color:var(--purple);}
+.icode.prince{color:#A78BFA;}.icode.huk{color:#C4B5FD;}
+.item-btn.ic-prince{background:rgba(167,139,250,.09);border-color:rgba(167,139,250,.38);}
+.item-btn.ic-huk{background:rgba(139,92,246,.09);border-color:rgba(139,92,246,.38);}
+.cbd-prince{background:var(--purple);}.cbd-huk{background:#7C3AED;}
+.cp-prince{background:rgba(167,139,250,.18);color:#C4B5FD;}
+.cp-huk{background:rgba(139,92,246,.2);color:#A78BFA;}
+.cart-badge-dot{position:absolute;top:6px;right:6px;width:17px;height:17px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;}
+.cbd-canada{background:var(--blue);}.cbd-super{background:var(--blue);}.cbd-champion{background:#B8960A;color:#fff;}.cbd-ghana{background:var(--green);}.cbd-supply{background:var(--purple);}
+
+/* RIGHT — CART */
+.cart-panel{width:348px;display:flex;flex-direction:column;background:rgba(10,16,28,0.50);min-height:0;}
+.cust-section{padding:11px 13px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.9px;text-transform:uppercase;margin-bottom:8px;}
+.field-row{display:flex;gap:7px;margin-bottom:7px;}
+.field{flex:1;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-family:'Figtree',sans-serif;font-size:12px;color:var(--text);outline:none;transition:border-color .15s;}
+.field:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-dim);}
+.field::placeholder{color:var(--text3);}
+.field-sel{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-family:'Figtree',sans-serif;font-size:12px;color:var(--text);outline:none;color-scheme:dark;}
+.field-sel:focus{border-color:var(--blue);}
+.cart-items-wrap{flex:1;overflow-y:auto;padding:0 13px;}
+.cart-empty-state{text-align:center;padding:40px 16px;color:var(--text3);}
+.ces-icon{font-size:34px;margin-bottom:8px;}
+.ces-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:3px;}
+.ces-sub{font-size:11px;}
+.cart-item{background:rgba(255,255,255,.055);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;margin:9px 0;}
+.ci-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.ci-code-pill{font-size:9px;font-weight:700;border-radius:4px;padding:2px 6px;margin-bottom:3px;display:inline-block;}
+.cp-canada{background:rgba(74,158,255,.18);color:#7BB8FF;}
+.cp-super{background:rgba(74,158,255,.18);color:#7BB8FF;}
+.cp-champion{background:rgba(255,214,10,.18);color:#B8960A;}
+.cp-ghana{background:rgba(52,199,89,.14);color:#6EDA8E;}
+.cp-supply{background:rgba(167,139,250,.18);color:#C4B5FD;}
+.ci-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
+.ci-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0;transition:color .15s;}
+.ci-rm:hover{color:var(--red);}
+.ci-bottom{display:flex;align-items:center;justify-content:space-between;}
+.qty-row{display:flex;align-items:center;gap:6px;}
+.qbtn{width:25px;height:25px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.07);
+  color:var(--text2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.qbtn:hover{background:rgba(255,255,255,.14);}
+.qbtn.plus{background:var(--blue);color:#fff;border-color:var(--blue);}
+.qbtn.plus:hover{background:#1A91FF;}
+.qval{font-size:13px;font-weight:700;min-width:18px;text-align:center;}
+.unit-p{font-size:10px;color:var(--text3);}
+.line-tot{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:var(--blue);}
+
+/* TOTALS */
+.totals-wrap{border-top:1px solid var(--border);padding:12px 13px;flex-shrink:0;}
+.tot-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.tot-lbl{font-size:12px;color:var(--text2);}
+.tot-val{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;}
+.pay-wrap{margin:9px 0;}
+.pay-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.9px;text-transform:uppercase;margin-bottom:4px;}
+.pay-inp{width:100%;background:rgba(48,209,88,.07);border:1px solid rgba(48,209,88,.22);border-radius:9px;
+  padding:9px 13px;font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;
+  color:var(--green);outline:none;text-align:center;}
+.pay-inp:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(48,209,88,.13);}
+.pay-inp::placeholder{color:rgba(48,209,88,.25);}
+.owing-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:9px;}
+.or-paid{background:rgba(48,209,88,.07);border:1px solid rgba(48,209,88,.18);}
+.or-owing{background:rgba(255,69,58,.07);border:1px solid rgba(255,69,58,.18);}
+.or-lbl{font-size:11px;font-weight:700;}
+.or-lbl.paid{color:var(--green);}.or-lbl.owing{color:var(--red);}
+.or-amt{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;}
+.notes-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;
+  padding:7px 10px;font-family:'Figtree',sans-serif;font-size:11px;color:var(--text);outline:none;
+  margin-bottom:10px;resize:none;}
+.notes-inp::placeholder{color:var(--text3);}
+.confirm-btn{width:100%;padding:12px;background:var(--blue);border:none;border-radius:10px;color:#fff;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.confirm-btn:hover{background:#1A91FF;box-shadow:0 8px 22px rgba(10,132,255,.35);}
+.confirm-btn:disabled{background:rgba(10,132,255,.18);color:rgba(255,255,255,.25);cursor:not-allowed;box-shadow:none;}
+
+/* BACK */
+.back-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;}
+.back-btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.4);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.cashier-nav-badge{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--blue);
+  background:var(--blue-dim);border:1px solid rgba(74,158,255,.25);border-radius:7px;padding:5px 11px;}
+
+/* ── MODALS ── */
+.modal-bg{position:fixed;inset:0;background:rgba(8,14,24,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal-box{background:#141E30;border:1px solid var(--border2);border-radius:20px;padding:26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.85);transform:scale(.94) translateY(12px);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.modal-bg.open .modal-box{transform:scale(1) translateY(0);}
+
+/* Price modal */
+.pm{width:320px;}
+.pm-sup{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;}
+.pm-sup.canada{color:var(--blue);}.pm-sup.super{color:var(--blue);}.pm-sup.champion{color:#FFD60A;}.pm-sup.ghana{color:var(--green);}.pm-sup.supply{color:var(--purple);}.pm-sup.prince{color:#A78BFA;}.pm-sup.huk{color:#C4B5FD;}
+.pm-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;margin-bottom:20px;letter-spacing:-.2px;}
+.pm-lbl{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.9px;text-transform:uppercase;display:block;margin-bottom:5px;}
+.pm-qty-row{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+.pm-qbtn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,.08);
+  color:var(--text);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.pm-qbtn:hover{background:rgba(255,255,255,.14);}
+.pm-qbtn.pl{background:var(--blue);color:#fff;border-color:var(--blue);}
+.pm-qty-inp{flex:1;background:rgba(255,255,255,.07);border:1px solid var(--border2);border-radius:9px;
+  padding:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:var(--text);outline:none;text-align:center;}
+.pm-qty-inp:focus{border-color:var(--blue);}
+.pm-price-inp{width:100%;background:rgba(255,255,255,.08);border:1px solid var(--border2);border-radius:9px;
+  padding:11px;font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;
+  color:var(--blue);outline:none;text-align:center;margin-bottom:12px;}
+.pm-price-inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim);}
+.pm-price-inp::placeholder{color:var(--text3);}
+.pm-lt{background:#0C1525;border-radius:9px;padding:9px 13px;text-align:center;margin-bottom:14px;}
+.pm-lt-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;}
+.pm-lt-val{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:var(--green);}
+.pm-actions{display:flex;gap:8px;}
+.pm-cancel{flex:1;padding:10px;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:9px;
+  color:var(--text2);font-family:'Figtree',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.pm-cancel:hover{background:rgba(255,255,255,.14);}
+.pm-add{flex:2;padding:10px;background:var(--blue);border:none;border-radius:9px;color:#fff;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.pm-add:hover{background:#1A91FF;}
+.pm-add:disabled{background:rgba(10,132,255,.18);color:rgba(255,255,255,.25);cursor:not-allowed;}
+
+/* Export modal */
+.em{width:570px;max-width:96vw;max-height:86vh;display:flex;flex-direction:column;}
+.em-title{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;color:var(--green);margin-bottom:3px;}
+.em-sub{font-size:12px;color:var(--text2);margin-bottom:13px;}
+.em-table-wrap{flex:1;overflow:auto;border:1px solid var(--border);border-radius:9px;margin-bottom:13px;}
+.em-table{width:100%;border-collapse:collapse;font-size:11px;}
+.em-table th{background:#0C1525;padding:7px 9px;color:var(--text3);font-weight:700;text-align:left;
+  white-space:nowrap;border-bottom:1px solid var(--border);}
+.em-table td{padding:7px 9px;color:var(--text2);white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.04);}
+.em-table td.hl{color:var(--blue);font-weight:700;}
+.em-instr{background:#0C1525;border-radius:9px;padding:11px 13px;margin-bottom:13px;font-size:11px;color:var(--text3);line-height:1.7;}
+.em-instr strong{color:var(--text);font-weight:600;}.em-instr .step{color:var(--blue);font-weight:700;}
+.em-btns{display:flex;gap:8px;flex-shrink:0;}
+.em-copy{flex:2;padding:11px;background:var(--blue);border:none;border-radius:9px;color:#fff;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s;}
+.em-copy:hover{background:#1A91FF;box-shadow:0 6px 18px rgba(10,132,255,.35);}
+.em-new{flex:1;padding:11px;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:9px;
+  color:var(--text2);font-family:'Figtree',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.em-new:hover{background:rgba(255,255,255,.13);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;align-items:center;gap:8px;
+  background:rgba(18,28,46,.97);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border:1px solid var(--border2);border-radius:12px;padding:10px 15px;font-size:12px;font-weight:500;
+  box-shadow:0 14px 40px rgba(0,0,0,.6);transform:translateY(70px);opacity:0;
+  transition:all .36s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.t-sheet{color:var(--green);font-weight:700;}
+
+/* ── DEPOSIT PANEL ── */
+.dep-panel{display:none;margin:8px 0;border-radius:11px;border:1.5px solid rgba(167,139,250,.4);
+  background:rgba(167,139,250,.08);padding:11px 13px;}
+.dep-panel.show{display:block;}
+.dep-panel-head{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:.8px;
+  text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.dep-bal-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.dep-bal-lbl{font-size:12px;color:var(--text2);}
+.dep-bal-val{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;color:var(--purple);}
+.dep-name-inp{width:100%;background:rgba(167,139,250,.1);border:1.5px solid rgba(167,139,250,.35);
+  border-radius:8px;padding:8px 10px;font-family:'Figtree',sans-serif;font-size:12px;
+  color:var(--text);outline:none;margin-bottom:8px;transition:border-color .15s;}
+.dep-name-inp:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.15);}
+.dep-name-inp::placeholder{color:rgba(167,139,250,.4);}
+.dep-bal-inp{width:100%;background:rgba(167,139,250,.1);border:1.5px solid rgba(167,139,250,.35);
+  border-radius:8px;padding:8px 10px;font-family:'Bricolage Grotesque',sans-serif;font-size:18px;
+  font-weight:800;color:var(--purple);outline:none;text-align:center;transition:border-color .15s;}
+.dep-bal-inp:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.15);}
+.dep-bal-inp::placeholder{color:rgba(167,139,250,.3);}
+.dep-warn{display:none;background:rgba(255,159,10,.1);border:1px solid rgba(255,159,10,.35);
+  border-radius:7px;padding:7px 10px;font-size:11px;color:var(--amber);line-height:1.5;margin-top:6px;}
+.dep-warn.show{display:block;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.11);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ HOME SCREEN ════════════════ -->
+<div class="screen" id="homeScreen">
+
+  <!-- NAV -->
+  <nav>
+    <div class="brand">
+      <div class="logo">PCL</div>
+      <div>
+        <div class="brand-name">Pocoloco Enterprise</div>
+        <div class="brand-sub">Kumasi</div>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-hub" onclick="switchTab('hub')">Hub</button>
+      <button class="nav-tab" id="tab-dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+    </div>
+
+    <div class="nav-right">
+      <div class="date-pill" id="datePill" onclick="toggleDrop(event)">
+        <span class="dp-icon">📅</span>
+        <span class="dp-text" id="dpText">—</span>
+        <span class="dp-edit">Change</span>
+        <div class="date-drop" id="dateDrop">
+          <span class="drop-lbl">Session Date</span>
+          <input type="date" class="drop-inp" id="dateInput" oninput="onDateChange(this.value)"/>
+          <div class="drop-quick">
+            <div class="dq" onclick="setToday(event)">Today</div>
+            <div class="dq" onclick="setYesterday(event)">Yesterday</div>
+          </div>
+        </div>
+      </div>
+      <div class="sync-badge" id="syncBadge" onclick="openSheetsConnect()" style="cursor:pointer;" title="Click to connect Google Sheets">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncLbl">Local only</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="home-body">
+
+    <!-- ══ HUB TAB ══ -->
+    <div class="tab-content active" id="content-hub">
+
+      <div class="pg-head r0">
+        <h1>Good morning — <em id="headDate">Fri, 27 Feb</em></h1>
+        <p>All actions below automatically update the matching tabs in your spreadsheet.</p>
+      </div>
+
+      <!-- STATUS BAR -->
+      <div class="status-bar r1">
+        <div class="sb-item">
+          <span class="sb-dot" style="background:var(--blue)"></span>
+          <span class="sb-lbl">Sales</span>
+          <span class="sb-val blue" id="statSales">₵14,200</span>
+          <span class="sb-meta" id="statSalesMeta">8 txns</span>
+        </div>
+        <div class="sb-item">
+          <span class="sb-dot" style="background:var(--green)"></span>
+          <span class="sb-lbl">Collected</span>
+          <span class="sb-val green" id="statCollected">₵11,500</span>
+        </div>
+        <div class="sb-item">
+          <span class="sb-dot" style="background:var(--amber)"></span>
+          <span class="sb-lbl">Debts</span>
+          <span class="sb-val amber" id="statDebts">₵6,340</span>
+          <span class="sb-meta" id="statDebtsMeta">12 debtors</span>
+        </div>
+        <div class="sb-item">
+          <span class="sb-dot" style="background:var(--red)"></span>
+          <span class="sb-lbl">Expenses</span>
+          <span class="sb-val red" id="statExpenses">₵1,050</span>
+          <span class="sb-meta" id="statExpensesMeta">3 entries</span>
+        </div>
+        <div class="sb-item" style="background:rgba(52,199,89,.06);border-radius:8px;padding:4px 12px;border:1px solid rgba(52,199,89,.18);">
+          <span class="sb-dot" style="background:var(--green)"></span>
+          <span class="sb-lbl" style="color:var(--green);">Bank Deposit</span>
+          <span class="sb-val green" id="statBank">₵10,450</span>
+        </div>
+      </div>
+
+      <div class="hero-row r2">
+        <!-- HERO -->
+        <div class="hero" onclick="openCashier('Super')">
+          <div class="hero-chip">🛒 Primary Action</div>
+          <span class="hero-emoji">🛒</span>
+          <h2>New Sale</h2>
+          <p>Browse <strong>⭐ Super</strong>, <strong>🏆 Champion</strong>, <strong>Ghana</strong> &amp; <strong>Supply</strong> items. Enter qty &amp; price, record payment — syncs directly to <strong>📝 Sales Entry</strong>.</p>
+          <button class="hero-btn">Open Cashier <span class="arr">→</span></button>
+        </div>
+
+        <!-- SIDE STACK -->
+        <div class="side-stack">
+          <div class="mc ex" onclick="openExpenses()">
+            <div class="mc-icon ia">💸</div>
+            <div class="mc-txt"><h3>Log Expense</h3><p>Transport, staff funds, supplies.<br/>→ 💸 Expenses Entry</p></div>
+            <span class="mc-arr">›</span>
+          </div>
+          <div class="mc db" onclick="openDebtors()">
+            <div class="mc-icon ir">📒</div>
+            <div class="mc-txt"><h3>Debtors / Payments</h3><p>Log payments, view balances.<br/>→ 📒 Debtors tab</p></div>
+            <span class="mc-arr">›</span>
+          </div>
+          <div class="mc dp" onclick="openDeposits()">
+            <div class="mc-icon ip">💵</div>
+            <div class="mc-txt"><h3>Deposits</h3><p>Pre-payments &amp; credits.<br/>→ 💵 Deposits tab</p></div>
+            <span class="mc-arr">›</span>
+          </div>
+          <div class="mc" id="skuSyncCard" onclick="toggleSkuPanel()" style="border-color:rgba(90,200,250,.3);">
+            <div class="mc-icon" style="background:rgba(90,200,250,.12);">🔄</div>
+            <div class="mc-txt"><h3>Sync SKUs</h3><p>Paste from Scoresheet tab<br/>to update item list live</p></div>
+            <span class="mc-arr" id="skuSyncArr">›</span>
+          </div>
+          <div class="mc" onclick="toggleSheetsGuide()" style="border-color:rgba(52,199,89,.3);">
+            <div class="mc-icon" style="background:rgba(52,199,89,.12);">📊</div>
+            <div class="mc-txt"><h3>Connect Sheets</h3><p>How to link this app<br/>to your Google Drive</p></div>
+            <span class="mc-arr" id="sheetsGuideArr">›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKU SYNC PANEL -->
+      <div id="skuSyncPanel" style="display:none;" class="r3">
+        <div class="act-card" style="border-color:rgba(90,200,250,.25);background:rgba(90,200,250,.04);">
+          <div class="act-head" style="color:var(--teal);">🔄 Sync SKUs from Scoresheet <span class="live-tag" style="color:var(--teal);background:rgba(90,200,250,.1);border-color:rgba(90,200,250,.3);">PASTE</span></div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.6;">
+            In your Google Sheets, open the <strong>📋 Scoresheet</strong> tab → select all rows from row 4 downward → Copy → paste below.<br/>
+            Expected columns: <span style="color:var(--teal);font-weight:700;">Code · Item Name · Category · Bale Type · Group / Supplier</span>
+          </p>
+          <textarea id="skuPasteBox" placeholder="Paste scoresheet data here (Ctrl+V)…" 
+            style="width:100%;height:110px;background:rgba(0,0,0,.3);border:1.5px dashed rgba(90,200,250,.3);border-radius:10px;
+            padding:10px 12px;font-family:'Figtree',sans-serif;font-size:12px;color:var(--text);outline:none;resize:none;color-scheme:dark;"
+            onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='rgba(90,200,250,.3)'"></textarea>
+          <div style="display:flex;gap:8px;margin-top:9px;align-items:center;">
+            <button onclick="applySkuPaste()" style="flex:2;padding:10px;background:var(--teal);border:none;border-radius:9px;color:#000;font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">✓ Apply to App</button>
+            <button onclick="resetSkus()" style="flex:1;padding:10px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;color:var(--text2);font-family:'Figtree',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">Reset to Default</button>
+            <span id="skuSyncStatus" style="font-size:11px;color:var(--text3);"></span>
+          </div>
+          <div style="margin-top:10px;background:rgba(0,0,0,.2);border-radius:8px;padding:10px 12px;font-size:10px;color:var(--text3);line-height:1.9;">
+            <strong style="color:var(--text2);">Valid Category values (must match exactly):</strong><br/>
+            <span style="color:#7BB8FF;">Super Canada</span> &nbsp;·&nbsp; <span style="color:#FFD60A;">Champion Canada</span> &nbsp;·&nbsp; <span style="color:#A78BFA;">Supply - Prince</span> &nbsp;·&nbsp; <span style="color:#C4B5FD;">Supply - HUK</span> &nbsp;·&nbsp; <span style="color:#6EDA8E;">Ghana</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOOGLE SHEETS CONNECTION GUIDE -->
+      <div id="sheetsGuidePanel" style="display:none;" class="r3">
+        <div class="act-card" style="border-color:rgba(52,199,89,.25);background:rgba(52,199,89,.03);">
+          <div class="act-head" style="color:var(--green);">📊 Google Sheets Connection Guide <span class="live-tag" style="color:var(--green);background:rgba(52,199,89,.1);border-color:rgba(52,199,89,.3);">SETUP</span></div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.9;">
+            <div style="display:grid;grid-template-columns:20px 1fr;gap:4px 8px;margin-bottom:10px;">
+              <span style="color:var(--green);font-weight:800;">1</span><span><strong>Upload spreadsheet to Google Drive</strong> — open drive.google.com → drag the .xlsx file in → right-click → Open with Google Sheets</span>
+              <span style="color:var(--green);font-weight:800;">2</span><span><strong>Bookmark the spreadsheet</strong> — you'll open it daily to enter sales</span>
+              <span style="color:var(--green);font-weight:800;">3</span><span><strong>Save this app</strong> — bookmark this page or save the HTML file alongside it</span>
+              <span style="color:var(--green);font-weight:800;">4</span><span><strong>Daily workflow:</strong> Open app → select items → confirm sale → Copy CSV → go to Google Sheets → 📝 Sales Entry tab → click first empty row in col A → Paste values only (Ctrl+Shift+V)</span>
+              <span style="color:var(--green);font-weight:800;">5</span><span><strong>Sync new items:</strong> Add rows to 📋 Scoresheet in Google Sheets → copy → paste into 🔄 Sync SKUs panel here</span>
+            </div>
+            <div style="background:rgba(0,0,0,.2);border-radius:7px;padding:8px 10px;">
+              <strong style="color:var(--text);">Paste tip:</strong> In Google Sheets always use <strong>Ctrl+Shift+V</strong> (Paste values only) — not Ctrl+V. This prevents formatting conflicts.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY FEED -->
+      <div class="bot-row r3">
+        <div class="act-card">
+          <div class="act-head">Sheet Activity <span class="live-tag">LIVE</span></div>
+          <div class="act-list" id="activityList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /hub -->
+
+    <!-- ══ DASHBOARD TAB ══ -->
+    <div class="tab-content" id="content-dashboard">
+
+      <div class="db-head r0">
+        <h1>Dashboard</h1>
+        <p>Complete summary for <span id="dashDate">Friday, 27 February 2026</span> · All figures pulled live from spreadsheet tabs.</p>
+      </div>
+
+      <!-- 5-card summary -->
+      <div class="db-summary r1">
+        <div class="db-card c-blue">
+          <div class="db-card-icon">📝</div>
+          <div class="db-card-lbl">Sales Today</div>
+          <div class="db-card-val" id="dbSales">₵14,200</div>
+          <div class="db-card-sub" id="dbSalesSub">8 transactions recorded</div>
+          <div class="db-card-bar"></div>
+        </div>
+        <div class="db-card c-green">
+          <div class="db-card-icon">💰</div>
+          <div class="db-card-lbl">Total Collected</div>
+          <div class="db-card-val" id="dbCollected">₵11,500</div>
+          <div class="db-card-sub" id="dbCollectedSub">amount paid in full today</div>
+          <div class="db-card-bar"></div>
+        </div>
+        <div class="db-card c-red">
+          <div class="db-card-icon">📒</div>
+          <div class="db-card-lbl">Outstanding Debts</div>
+          <div class="db-card-val" id="dbDebts">₵6,340</div>
+          <div class="db-card-sub" id="dbDebtsSub">across 12 active debtors</div>
+          <div class="db-card-bar"></div>
+        </div>
+        <div class="db-card c-amber">
+          <div class="db-card-icon">💸</div>
+          <div class="db-card-lbl">Expenses Today</div>
+          <div class="db-card-val" id="dbExpenses">₵1,050</div>
+          <div class="db-card-sub" id="dbExpensesSub">3 expense entries</div>
+          <div class="db-card-bar"></div>
+        </div>
+        <div class="db-card c-purple">
+          <div class="db-card-icon">💵</div>
+          <div class="db-card-lbl">Deposits Held</div>
+          <div class="db-card-val" id="dbDeposits">₵4,800</div>
+          <div class="db-card-sub" id="dbDepositsSub">from 5 customers</div>
+          <div class="db-card-bar"></div>
+        </div>
+        <div class="db-card c-green" style="border-color:rgba(52,199,89,.25);">
+          <div class="db-card-icon">🏦</div>
+          <div class="db-card-lbl">Bank Deposit</div>
+          <div class="db-card-val" id="dbBank">₵10,450</div>
+          <div class="db-card-bar"></div>
+        </div>
+      </div>
+
+      <!-- 4-col main: Sales | Debtors | Expenses | Deposits -->
+      <div class="db-main r2">
+
+        <!-- SALES LOG -->
+        <div class="panel">
+          <div class="panel-head">📝 Today's Sales <span class="panel-count" id="salesLogCount">8 entries</span></div>
+          <div class="sales-scroll" id="salesLogList"></div>
+        </div>
+
+        <!-- DEBTORS -->
+        <div class="panel">
+          <div class="panel-head">📒 Debtors <span class="panel-count" id="debtorCount">12 active</span></div>
+          <div class="debtors-scroll">
+            <table class="dt-table">
+              <thead><tr><th>Customer</th><th style="text-align:right">Balance</th></tr></thead>
+              <tbody id="debtorTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- EXPENSES -->
+        <div class="panel">
+          <div class="panel-head">💸 Expenses <span class="panel-count" id="expensesTotalLabel">₵1,050 today</span></div>
+          <div id="expensesList"></div>
+        </div>
+
+        <!-- DEPOSITS -->
+        <div class="panel">
+          <div class="panel-head">💵 Deposits <span class="panel-count" id="depositCount">5 held</span></div>
+          <div id="depositList"></div>
+        </div>
+
+      </div>
+
+      <!-- STOCK — 3 streams full item list -->
+      <div class="db-streams r3">
+
+        <div class="panel">
+          <div class="stream-header">
+            <span class="stream-header-dot" style="background:var(--blue)"></span>
+            <span class="stream-header-name">🇨🇦 Canada Stock</span>
+            <span class="stream-header-count">47 types</span>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <span style="color:var(--blue);">🏆 Champion Bale</span>
+          </div>
+          <div class="stream-scroll" id="stockCanadaChampion" style="max-height:160px;margin-bottom:12px;"></div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--border);padding-top:10px;">
+            <span style="color:var(--blue);">⭐ Super Bale</span>
+          </div>
+          <div class="stream-scroll" id="stockCanadaSuper" style="max-height:160px;"></div>
+        </div>
+
+        <div class="panel">
+          <div class="stream-header">
+            <span class="stream-header-dot" style="background:var(--green)"></span>
+            <span class="stream-header-name">🇬🇭 Ghana Stock</span>
+            <span class="stream-header-count">13 types</span>
+          </div>
+          <div class="stream-scroll" id="stockGhana"></div>
+        </div>
+
+        <div class="panel">
+          <div class="stream-header">
+            <span class="stream-header-dot" style="background:var(--purple)"></span>
+            <span class="stream-header-name">📦 Supply Stock</span>
+            <span class="stream-header-count" id="supplyStockCount">12 types</span>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <span style="color:#A78BFA;">🔵 Prince</span>
+          </div>
+          <div class="stream-scroll" id="stockSupplyPrince" style="max-height:160px;margin-bottom:12px;"></div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--border);padding-top:10px;">
+            <span style="color:#C4B5FD;">🟠 HUK</span>
+          </div>
+          <div class="stream-scroll" id="stockSupplyHUK" style="max-height:160px;"></div>
+        </div>
+
+      </div>
+
+    </div><!-- /dashboard -->
+
+  </div><!-- /home-body -->
+</div><!-- /homeScreen -->
+
+
+<!-- ════════════════ CASHIER SCREEN ════════════════ -->
+<div class="screen hidden" id="cashierScreen">
+
+  <nav>
+    <div class="brand">
+      <div class="logo">PCL</div>
+      <div>
+        <div class="brand-name">Pocoloco Enterprise</div>
+        <div class="brand-sub">Kumasi</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:20px;">
+      <span class="cashier-nav-badge">🛒 Cashier</span>
+    </div>
+    <div class="nav-right">
+      <div class="date-pill" style="pointer-events:none;">
+        <span class="dp-icon">📅</span>
+        <span class="dp-text" id="cashierDate">—</span>
+      </div>
+      <button class="back-btn" onclick="goHome()">← Back to Hub</button>
+    </div>
+  </nav>
+
+  <div class="cashier-body">
+
+    <!-- LEFT: ITEMS -->
+    <div class="items-panel">
+      <div class="search-bar">
+        <input class="search-inp" id="searchInp" placeholder="🔍  Search by item name or code…" oninput="onSearch(this.value)"/>
+      </div>
+      <div class="cat-tabs" id="catTabs">
+        <button class="cat-tab-btn ac-super" onclick="switchCat('Super',this)">⭐ SUPER CANADA<span class="tab-sub-lbl" id="countSuper">47 items</span></button>
+        <button class="cat-tab-btn" onclick="switchCat('Champion',this)">🏆 CHAMPION CANADA<span class="tab-sub-lbl" id="countChampion">59 items</span></button>
+        <button class="cat-tab-btn" onclick="switchCat('Supply',this)">📦 SUPPLY — PRINCE / H-UK<span class="tab-sub-lbl" id="countSupply">12 items</span></button>
+        <button class="cat-tab-btn" onclick="switchCat('Ghana',this)">🇬🇭 GHANA<span class="tab-sub-lbl" id="countGhana">13 items</span></button>
+      </div>
+      <div class="item-grid" id="itemGrid"></div>
+    </div>
+
+    <!-- RIGHT: CART -->
+    <div class="cart-panel">
+      <div class="cust-section">
+        <div class="sec-lbl">Customer Details</div>
+        <div class="field-row">
+          <input class="field" id="custName" placeholder="Customer name"/>
+          <input class="field" id="custContact" placeholder="Contact / Phone"/>
+        </div>
+        <select class="field-sel" id="txType" onchange="onTxTypeChange(this.value)">
+          <option>Sale</option>
+          <option>Paid from Deposit</option>
+        </select>
+
+        <!-- DEPOSIT PANEL — shown when tx type = Paid from Deposit -->
+        <div class="dep-panel" id="depPanel">
+          <div class="dep-panel-head">💵 Deposit Details</div>
+          <input class="dep-name-inp" id="depCustomerName" placeholder="Depositor name (e.g. Mrs. Mensah)" oninput="onDepNameInput(this.value)"/>
+          <div class="dep-bal-row">
+            <span class="dep-bal-lbl">Their deposit balance (₵)</span>
+          </div>
+          <input class="dep-bal-inp" id="depBalance" type="number" placeholder="0" oninput="onDepBalInput(this.value)"/>
+          <div class="dep-warn" id="depWarn"></div>
+        </div>
+
+      </div>
+
+      <div class="cart-items-wrap" id="cartItemsWrap">
+        <div class="cart-empty-state" id="cartEmpty">
+          <div class="ces-icon">🛒</div>
+          <div class="ces-title">Cart is empty</div>
+          <div class="ces-sub">Tap items on the left to add them</div>
+        </div>
+      </div>
+
+      <div class="totals-wrap" id="totalsWrap" style="display:none;">
+        <div class="tot-row">
+          <span class="tot-lbl" id="subtotalLbl">Subtotal (0 items)</span>
+          <span class="tot-val" id="subtotalVal">₵0</span>
+        </div>
+
+        <div class="pay-wrap">
+          <div class="pay-lbl">Amount Paid</div>
+          <input class="pay-inp" id="amtPaid" type="number" placeholder="₵ 0" oninput="updateOwing()"/>
+        </div>
+        <div class="owing-row or-paid" id="owingRow">
+          <span class="or-lbl paid" id="owingLbl">✅ Fully Paid</span>
+          <span class="or-amt" id="owingAmt">₵0</span>
+        </div>
+        <textarea class="notes-inp" id="custNotes" placeholder="Notes (optional)" rows="2"></textarea>
+        <button class="confirm-btn" onclick="confirmSale()">✅  Save Sale</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRICE MODAL -->
+<div class="modal-bg" id="priceModal">
+  <div class="modal-box pm">
+    <div class="pm-sup" id="pmCat"></div>
+    <div class="pm-name" id="pmName"></div>
+    <label class="pm-lbl">QTY SOLD</label>
+    <div class="pm-qty-row">
+      <button class="pm-qbtn" onclick="adjQty(-1)">−</button>
+      <input class="pm-qty-inp" id="pmQty" type="number" value="1" min="1" oninput="updateLineTotal()"/>
+      <button class="pm-qbtn pl" onclick="adjQty(1)">+</button>
+    </div>
+    <label class="pm-lbl">UNIT PRICE (₵)</label>
+    <input class="pm-price-inp" id="pmPrice" type="number" placeholder="e.g. 1500" oninput="updateLineTotal()" autofocus/>
+    <div class="pm-lt" id="pmLtWrap" style="display:none;">
+      <div class="pm-lt-lbl">Line total</div>
+      <div class="pm-lt-val" id="pmLtVal">₵0</div>
+    </div>
+    <div class="pm-actions">
+      <button class="pm-cancel" onclick="closeModal('priceModal')">Cancel</button>
+      <button class="pm-add" id="pmAddBtn" onclick="addToCart()" disabled>Add to Cart →</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-bg" id="exportModal">
+  <div class="modal-box em">
+    <div class="em-title">✅ Sale Confirmed!</div>
+    <div class="em-sub" id="emSub">Ready to add to your Sales Log spreadsheet</div>
+    <div class="em-table-wrap"><table class="em-table" id="emTable"></table></div>
+    <div class="em-instr">
+      <strong>How to add to your Google Sheets:</strong><br/>
+      1. Click <span class="step">Copy CSV</span> below<br/>
+      2. Open your spreadsheet → go to <span class="step">📝 Sales Entry</span> tab<br/>
+      3. Click the first empty cell in column <span class="step">A</span><br/>
+      4. Paste with <span class="step">Ctrl+Shift+V</span> (paste values only)<br/>
+      5. Columns map automatically: Date → A, Code → D, Category → C, Bale Type → M ✓
+    </div>
+    <div class="em-btns">
+      <button class="em-copy" id="emCopyBtn" onclick="copyCSV()">📋 Copy CSV — paste into Google Sheets</button>
+      <button class="em-new" onclick="newSale()">New Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span>✅</span>
+  <span>Entry synced to <span class="t-sheet" id="toastSheet">Spreadsheet</span></span>
+</div>
+
+<script>
+/* ── DATA ── */
+const ITEMS = [
+  // ── SUPER BALE ── MENS
+  {code:'SUP-M01',name:'Mens Shirts White (400 pcs)',     cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  {code:'SUP-M02',name:'Mens T-Shirts R/N S/S',           cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  {code:'SUP-M03',name:'Mens T-Shirts S/S Oversize',      cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  {code:'SUP-M04',name:'Mens Shirt Cotton (250 pcs)',      cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  {code:'SUP-M05',name:'Mens T-Shirt Sport',              cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  {code:'SUP-M06',name:'Mens Underwear / Boxers',         cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  {code:'SUP-M07',name:'Mens T-Shirt L/S Printed',        cat:'Super Canada', baleType:'Super', grp:'Mens'},
+  // ── SUPER BALE ── LADIES
+  {code:'SUP-L01',name:'Bras',                            cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L02',name:'Bras Plus Size (50 lb)',          cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L03',name:'Ladies Sports Bras',              cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L04',name:'Body Suits',                      cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L05',name:'Ladies Corsets',                  cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L06',name:'Dresses Jollin Mix Long',         cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L07',name:'Ladies Dresses Cotton',           cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L08',name:'Ladies Dresses Mix',              cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L09',name:'Dresses Plus Size America',       cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L10',name:'Ladies Blouse Mix',               cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L11',name:'Ladies Denim Jean Dress',         cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L12',name:'Ladies Scrubs Hospital Uniform',  cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L13',name:'Ladies Elastic Jeans',            cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L14',name:'Ladies Pants Dress (200 pcs)',    cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L15',name:'Ladies Pants Cotton (200 pcs)',   cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L16',name:'Ladies Skirts Denim',             cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L17',name:'Ladies Jumpsuit',                 cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L18',name:'Ladies Scarves Silk',             cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L19',name:'Ladies Skirt Mix',                cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  {code:'SUP-L20',name:'Ladies T-Shirt S/S',              cat:'Super Canada', baleType:'Super', grp:'Ladies'},
+  // ── SUPER BALE ── GENERAL
+  {code:'SUP-G01',name:'Army Mix',                        cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G02',name:'Pants Poly Sport',                cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G03',name:'Wool Caps',                       cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G04',name:'Pants Jogging / Sweatpants',      cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G05',name:'Safety Reflectors',               cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G06',name:'Handkerchiefs',                   cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G07',name:'Pants Jeans (100 pcs)',           cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G08',name:'Caps Baseball',                   cat:'Super Canada', baleType:'Super', grp:'General'},
+  {code:'SUP-G09',name:'Sweatshirts Hooded',              cat:'Super Canada', baleType:'Super', grp:'General'},
+  // ── SUPER BALE ── CHILDREN
+  {code:'SUP-K01',name:'Baby Rummage (0–8 Years)',        cat:'Super Canada', baleType:'Super', grp:'Children'},
+  {code:'SUP-K02',name:'Baby Rummage Medium',             cat:'Super Canada', baleType:'Super', grp:'Children'},
+  {code:'SUP-K03',name:'Boys Jogging Pants',              cat:'Super Canada', baleType:'Super', grp:'Children'},
+  {code:'SUP-K04',name:'Boys Shorts',                     cat:'Super Canada', baleType:'Super', grp:'Children'},
+  {code:'SUP-K05',name:'Girls Mix',                       cat:'Super Canada', baleType:'Super', grp:'Children'},
+  // ── SUPER BALE ── HOUSEHOLD
+  {code:'SUP-H01',name:'HHR',                             cat:'Super Canada', baleType:'Super', grp:'Household'},
+  {code:'SUP-H02',name:'Torshion',                        cat:'Super Canada', baleType:'Super', grp:'Household'},
+  {code:'SUP-H03',name:'HHR Special',                     cat:'Super Canada', baleType:'Super', grp:'Household'},
+  {code:'SUP-H04',name:'Towels',                          cat:'Super Canada', baleType:'Super', grp:'Household'},
+  {code:'SUP-H05',name:'Floor Mats',                      cat:'Super Canada', baleType:'Super', grp:'Household'},
+  {code:'SUP-H06',name:'Bedsheets Flat & Fitted',         cat:'Super Canada', baleType:'Super', grp:'Household'},
+
+  // ── CHAMPION BALE ── MENS
+  {code:'CHP-M01',name:'Mens Flannel Shirt',              cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M02',name:'Mens Cotton Shirt',               cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M03',name:'Mens Boxers',                     cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M04',name:'Mens X-Large T-Shirts S/S',       cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M05',name:'Mens Collar T-Shirts X/L',        cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M06',name:'Mens Collar T-Shirts S/S',        cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M07',name:'Mens Jeans #1',                   cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M08',name:'Mens White Shirts',               cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M09',name:'Mens Tank Tops',                  cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M10',name:'Mens T-Shirts S/S R/N',           cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M11',name:'Original Shorts Mix',             cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M12',name:'Mens Printed T-Shirts L/S',       cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M13',name:'Mens Underwear',                  cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  {code:'CHP-M14',name:'Sports T-Shirts Athletic',        cat:'Champion Canada', baleType:'Champion', grp:'Mens'},
+  // ── CHAMPION BALE ── LADIES
+  {code:'CHP-L01',name:'Ladies Denim Jean Dress',         cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L02',name:'Ladies Scrubs Hospital Uniform',  cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L03',name:'Ladies Skirts Denim',             cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L04',name:'Oversize Dress',                  cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L05',name:'Rayon Pants',                     cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L06',name:'Girdles',                         cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L07',name:'Ladies Jeans #1',                 cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L08',name:'Ladies Jeans Oversize',           cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L09',name:'Ladies Poly Silk Blouses',        cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L10',name:'Ladies Tank Tops',                cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L11',name:'Legging / Tights',                cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L12',name:'Sports Bra',                      cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L13',name:'Ladies Underwear',                cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L14',name:'Ladies Poly Dresses',             cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L15',name:'Ladies Polo Dresses',             cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L16',name:'Ladies Cotton Dresses',           cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L17',name:'Ladies Jump Suits',               cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L18',name:'Velvet Mix Blouse / Dresses',     cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L19',name:'Velvet Pants',                    cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L20',name:'Biker Shorts',                    cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L21',name:'Brassieres',                      cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  {code:'CHP-L22',name:'Bellbottom Pants',                cat:'Champion Canada', baleType:'Champion', grp:'Ladies'},
+  // ── CHAMPION BALE ── GENERAL
+  {code:'CHP-G01',name:'Wool Caps',                       cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G02',name:'Safety Reflectors',               cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G03',name:'Caps Baseball',                   cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G04',name:'Socks',                           cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G05',name:'Nylon Rummage',                   cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G06',name:'Hooded Sweatshirts',              cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G07',name:'Sweatpants',                      cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  {code:'CHP-G08',name:'Sweatshirts',                     cat:'Champion Canada', baleType:'Champion', grp:'General'},
+  // ── CHAMPION BALE ── CHILDREN
+  {code:'CHP-K01',name:"Children's Sweater",              cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K02',name:'Girls Mix',                       cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K03',name:'Girls Dress',                     cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K04',name:'Boys Shorts',                     cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K05',name:'Light Childrens Rummage',         cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K06',name:'Medium Childrens Rummage',        cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K07',name:'Children Jogging Tops & Bottoms', cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K08',name:'Children Pyjamas',                cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  {code:'CHP-K09',name:'Light Childrens Rummage #2 Asia', cat:'Champion Canada', baleType:'Champion', grp:'Children'},
+  // ── CHAMPION BALE ── HOUSEHOLD
+  {code:'CHP-H01',name:'Bedsheet #1',                     cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H02',name:'Bedsheet #2',                     cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H03',name:'Household Rummage',               cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H04',name:'Kitchen Mix',                     cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H05',name:'Towels #2',                       cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H06',name:'Blankets',                        cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H07',name:'Baby Blankets',                   cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+  {code:'CHP-H08',name:'Bathmats',                        cat:'Champion Canada', baleType:'Champion', grp:'Household'},
+
+  // ── GHANA ──
+  {code:'G201',name:'HHR A Ghana',           cat:'Ghana'},
+  {code:'G202',name:'HHR B Ghana',           cat:'Ghana'},
+  {code:'G203',name:'Bedsheet Ghana',        cat:'Ghana'},
+  {code:'G204',name:'White Bedsheet Ghana',  cat:'Ghana'},
+  {code:'G205',name:'Lace Ghana',            cat:'Ghana'},
+  {code:'G206',name:'Ladies Underwear Ghana',cat:'Ghana'},
+  {code:'G207',name:'Towel A Ghana',         cat:'Ghana'},
+  {code:'G208',name:'Towel B Ghana',         cat:'Ghana'},
+  {code:'G209',name:'Towel C Ghana',         cat:'Ghana'},
+  {code:'G210',name:'Suit Ghana',            cat:'Ghana'},
+  {code:'G211',name:'Mixmix Ghana',          cat:'Ghana'},
+  {code:'G212',name:'SIPO Ghana',            cat:'Ghana'},
+  {code:'G213',name:'KG Bale Ghana',         cat:'Ghana'},
+
+  // ── SUPPLY — PRINCE ──
+  {code:'PRI-H01',name:'HHR A',           cat:'Supply - Prince', supplyType:'Prince'},
+  {code:'PRI-H02',name:'HHR B',           cat:'Supply - Prince', supplyType:'Prince'},
+  {code:'PRI-B01',name:'Bedsheet',        cat:'Supply - Prince', supplyType:'Prince'},
+  {code:'PRI-C01',name:'Curtains',        cat:'Supply - Prince', supplyType:'Prince'},
+  {code:'PRI-P01',name:'Pillow Cases',    cat:'Supply - Prince', supplyType:'Prince'},
+  {code:'PRI-M01',name:'Men T-Shirt',     cat:'Supply - Prince', supplyType:'Prince'},
+
+  // ── SUPPLY — HUK ──
+  {code:'HUK-H01',name:'HHR A',           cat:'Supply - HUK', supplyType:'HUK'},
+  {code:'HUK-H02',name:'HHR B',           cat:'Supply - HUK', supplyType:'HUK'},
+  {code:'HUK-B01',name:'Bedsheet',        cat:'Supply - HUK', supplyType:'HUK'},
+  {code:'HUK-C01',name:'Curtains',        cat:'Supply - HUK', supplyType:'HUK'},
+  {code:'HUK-P01',name:'Pillow Cases',    cat:'Supply - HUK', supplyType:'HUK'},
+  {code:'HUK-M01',name:'Men T-Shirt',     cat:'Supply - HUK', supplyType:'HUK'},
+];
+
+/* ── STATE ── */
+let sess = new Date();
+let activeTab = 'Super';
+let searchQ = '';
+let cart = [];
+let modalItem = null;
+let selectedBale = null;
+let exportedCSV = '';
+
+/* ── DATE ── */
+const SHORT_D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const SHORT_M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const LONG_M=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function fmtPill(d){return d.getDate()+' '+SHORT_M[d.getMonth()]+' '+d.getFullYear();}
+function fmtHead(d){return SHORT_D[d.getDay()]+', '+d.getDate()+' '+SHORT_M[d.getMonth()];}
+function fmtFull(d){return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function fmtDate(d){return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
+function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+function refreshDate(){
+  document.getElementById('dpText').textContent = fmtPill(sess);
+  document.getElementById('cashierDate').textContent = fmtPill(sess);
+  document.getElementById('headDate').textContent = fmtHead(sess);
+  document.getElementById('dashDate').textContent = fmtFull(sess);
+  document.getElementById('dateInput').value = toISO(sess);
+  refreshStats();
+}
+function onDateChange(v){if(!v)return;const[y,m,d]=v.split('-').map(Number);sess=new Date(y,m-1,d);refreshDate();closeDrop();}
+function setToday(e){e.stopPropagation();sess=new Date();refreshDate();closeDrop();}
+function setYesterday(e){e.stopPropagation();const d=new Date();d.setDate(d.getDate()-1);sess=d;refreshDate();closeDrop();}
+
+let dropOpen=false;
+function toggleDrop(e){e.stopPropagation();dropOpen=!dropOpen;document.getElementById('dateDrop').classList.toggle('open',dropOpen);}
+function closeDrop(){dropOpen=false;document.getElementById('dateDrop').classList.remove('open');}
+document.addEventListener('click',e=>{if(!document.getElementById('datePill').contains(e.target))closeDrop();});
+
+/* ── TABS (home) ── */
+function switchTab(tab){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('content-'+tab).classList.add('active');
+}
+
+
+/* ══════════════════════════════════════════
+   CASHIER — GRID & CART ENGINE
+══════════════════════════════════════════ */
+
+/* ── Category helpers ── */
+const CAT_STYLE = {
+  'Super Canada':   { btn:'ic-super',    code:'super',    badge:'cbd-super',    pill:'cp-super'    },
+  'Champion Canada':{ btn:'ic-champion', code:'champion', badge:'cbd-champion', pill:'cp-champion' },
+  'Ghana':          { btn:'ic-ghana',    code:'ghana',    badge:'cbd-ghana',    pill:'cp-ghana'    },
+  'Supply - Prince':{ btn:'ic-prince',   code:'prince',   badge:'cbd-prince',   pill:'cp-prince'   },
+  'Supply - HUK':   { btn:'ic-huk',      code:'huk',      badge:'cbd-huk',      pill:'cp-huk'      },
+};
+function catStyle(cat){ return CAT_STYLE[cat]||{btn:'ic-super',code:'super',badge:'cbd-super',pill:'cp-super'}; }
+
+/* ── Switch category tab ── */
+function switchCat(tab, btn){
+  activeTab = tab;
+  searchQ = '';
+  document.getElementById('searchInp').value = '';
+  document.querySelectorAll('.cat-tab-btn').forEach(b => b.className = 'cat-tab-btn');
+  if(btn){
+    const clsMap = {Super:'ac-super', Champion:'ac-champion', Ghana:'ac-ghana', Supply:'ac-supply'};
+    btn.className = 'cat-tab-btn ' + (clsMap[tab]||'');
+  }
+  renderGrid();
+}
+
+/* ── Search ── */
+function onSearch(val){
+  searchQ = val.trim().toLowerCase();
+  renderGrid();
+}
+
+/* ── Render item grid ── */
+function renderGrid(){
+  const grid = document.getElementById('itemGrid');
+  if(!grid) return;
+
+  const cartQty = {};
+  cart.forEach(i => { cartQty[i.code] = (cartQty[i.code]||0) + i.qty; });
+
+  let items;
+  if(searchQ){
+    items = ITEMS.filter(i =>
+      i.name.toLowerCase().includes(searchQ) ||
+      i.code.toLowerCase().includes(searchQ)
+    );
+    grid.innerHTML = items.length
+      ? items.map(item => itemBtnHTML(item, cartQty[item.code]||0)).join('')
+      : '<div style="padding:24px;color:var(--text3);font-size:13px;">No items match "'+searchQ+'".</div>';
+    return;
+  }
+
+  if(activeTab === 'Super'){
+    items = ITEMS.filter(i => i.cat === 'Super Canada');
+    grid.innerHTML = renderGrouped(items, cartQty, 'super');
+  } else if(activeTab === 'Champion'){
+    items = ITEMS.filter(i => i.cat === 'Champion Canada');
+    grid.innerHTML = renderGrouped(items, cartQty, 'champion');
+  } else if(activeTab === 'Ghana'){
+    items = ITEMS.filter(i => i.cat === 'Ghana');
+    grid.innerHTML = items.map(item => itemBtnHTML(item, cartQty[item.code]||0)).join('');
+  } else if(activeTab === 'Supply'){
+    const prince = ITEMS.filter(i => i.cat === 'Supply - Prince');
+    const huk    = ITEMS.filter(i => i.cat === 'Supply - HUK');
+    let html = '';
+    if(prince.length){
+      html += `<div class="item-group-header gh-supply">&#128309; Prince<span class="gh-pill cp-prince">${prince.length}</span></div>`;
+      html += prince.map(item => itemBtnHTML(item, cartQty[item.code]||0)).join('');
+    }
+    if(huk.length){
+      html += `<div class="item-group-header gh-supply">&#128992; HUK<span class="gh-pill cp-huk">${huk.length}</span></div>`;
+      html += huk.map(item => itemBtnHTML(item, cartQty[item.code]||0)).join('');
+    }
+    grid.innerHTML = html;
+  }
+}
+
+function renderGrouped(items, cartQty, styleKey){
+  const groups = {};
+  const order  = [];
+  items.forEach(item => {
+    const g = item.grp || 'General';
+    if(!groups[g]){ groups[g] = []; order.push(g); }
+    groups[g].push(item);
+  });
+  const icons = {Mens:'&#128084;', Ladies:'&#128281;', General:'&#128313;', Children:'&#128102;', Household:'&#127968;'};
+  return order.map(g => {
+    const ghCls  = 'gh-' + styleKey;
+    const pillCls = 'cp-' + styleKey;
+    return `<div class="item-group-header ${ghCls}">${icons[g]||'&bull;'} ${g}<span class="gh-pill ${pillCls}">${groups[g].length}</span></div>`
+      + groups[g].map(item => itemBtnHTML(item, cartQty[item.code]||0)).join('');
+  }).join('');
+}
+
+function itemBtnHTML(item, qty){
+  const s = catStyle(item.cat);
+  const badge = qty > 0 ? `<span class="cart-badge-dot ${s.badge}">${qty}</span>` : '';
+  const safeItem = JSON.stringify(item).replace(/'/g,"&#39;");
+  return `<button class="item-btn ${s.btn}" onclick='openItemModal(${safeItem})'>
+    <div class="icode ${s.code}">${item.code}</div>
+    <div class="iname">${item.name}</div>
+    ${badge}
+  </button>`;
+}
+
+/* ── Item modal ── */
+function openItemModal(item){
+  modalItem = item;
+  document.getElementById('pmCat').textContent  = item.cat;
+  document.getElementById('pmName').textContent = item.name;
+  document.getElementById('pmQty').value        = 1;
+  document.getElementById('pmPrice').value      = '';
+  document.getElementById('pmLtWrap').style.display = 'none';
+  document.getElementById('pmAddBtn').disabled  = true;
+  document.getElementById('priceModal').classList.add('open');
+  setTimeout(() => document.getElementById('pmPrice').focus(), 80);
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+function adjQty(delta){
+  const inp = document.getElementById('pmQty');
+  inp.value = Math.max(1, (parseInt(inp.value)||1) + delta);
+  updateLineTotal();
+}
+
+function updateLineTotal(){
+  const qty   = parseInt(document.getElementById('pmQty').value)   || 0;
+  const price = parseFloat(document.getElementById('pmPrice').value) || 0;
+  const ok    = qty > 0 && price > 0;
+  document.getElementById('pmAddBtn').disabled = !ok;
+  const wrap = document.getElementById('pmLtWrap');
+  if(ok){
+    wrap.style.display = 'flex';
+    document.getElementById('pmLtVal').textContent = '&#8373;'+Number(qty*price).toLocaleString('en-GH');
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function addToCart(){
+  if(!modalItem) return;
+  const qty   = parseInt(document.getElementById('pmQty').value)    || 1;
+  const price = parseFloat(document.getElementById('pmPrice').value) || 0;
+  if(qty < 1 || price <= 0) return;
+  const existing = cart.find(c => c.code === modalItem.code);
+  if(existing){ existing.qty = qty; existing.price = price; }
+  else { cart.push({...modalItem, qty, price}); }
+  closeModal('priceModal');
+  renderGrid();
+  renderCart();
+}
+
+/* ── Cart ── */
+function removeFromCart(idx){
+  cart.splice(idx, 1);
+  renderGrid();
+  renderCart();
+}
+
+function changeQty(idx, delta){
+  if(!cart[idx]) return;
+  cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+  renderCart();
+}
+
+function renderCart(){
+  const wrap       = document.getElementById('cartItemsWrap');
+  const empty      = document.getElementById('cartEmpty');
+  const totWrap    = document.getElementById('totalsWrap');
+  const confirmBtn = document.querySelector('.confirm-btn');
+  if(!wrap) return;
+
+  [...wrap.querySelectorAll('.cart-item')].forEach(el => el.remove());
+
+  if(!cart.length){
+    empty.style.display   = 'block';
+    totWrap.style.display = 'none';
+    if(confirmBtn) confirmBtn.disabled = true;
+    return;
+  }
+
+  empty.style.display   = 'none';
+  totWrap.style.display = 'block';
+  if(confirmBtn) confirmBtn.disabled = false;
+
+  cart.forEach((item, idx) => {
+    const s         = catStyle(item.cat);
+    const lineTotal = item.qty * item.price;
+    const div       = document.createElement('div');
+    div.className   = 'cart-item';
+    div.innerHTML   = `
+      <div class="ci-top">
+        <div>
+          <span class="ci-code-pill ${s.pill}">${item.code}</span>
+          <div class="ci-name">${item.name}</div>
+        </div>
+        <button class="ci-rm" onclick="removeFromCart(${idx})">&#215;</button>
+      </div>
+      <div class="ci-bottom">
+        <div class="qty-row">
+          <button class="qbtn" onclick="changeQty(${idx},-1)">&#8722;</button>
+          <span class="qval">${item.qty}</span>
+          <button class="qbtn plus" onclick="changeQty(${idx},1)">+</button>
+        </div>
+        <span class="unit-p">&#8373;${Number(item.price).toLocaleString('en-GH')} each</span>
+        <span class="line-tot">&#8373;${Number(lineTotal).toLocaleString('en-GH')}</span>
+      </div>`;
+    wrap.appendChild(div);
+  });
+
+  const total = cart.reduce((t,i) => t + i.qty*i.price, 0);
+  const count = cart.reduce((t,i) => t + i.qty, 0);
+  document.getElementById('subtotalLbl').textContent = `Subtotal (${count} item${count!==1?'s':''})`;
+  document.getElementById('subtotalVal').textContent = '&#8373;'+Number(total).toLocaleString('en-GH');
+  updateOwing();
+}
+
+function updateOwing(){
+  const total = cart.reduce((t,i) => t + i.qty*i.price, 0);
+  const paid  = parseFloat(document.getElementById('amtPaid').value) || 0;
+  const owing = Math.max(0, total - paid);
+  const row   = document.getElementById('owingRow');
+  const lbl   = document.getElementById('owingLbl');
+  const amt   = document.getElementById('owingAmt');
+  if(owing > 0){
+    row.className    = 'owing-row or-owing';
+    lbl.className    = 'or-lbl owing';
+    lbl.textContent  = '\u26a0 Amount Owing';
+    amt.textContent  = '&#8373;'+Number(owing).toLocaleString('en-GH');
+    amt.style.color  = 'var(--red)';
+  } else {
+    row.className    = 'owing-row or-paid';
+    lbl.className    = 'or-lbl paid';
+    lbl.textContent  = '\u2705 Fully Paid';
+    amt.textContent  = '&#8373;'+Number(paid).toLocaleString('en-GH');
+    amt.style.color  = 'var(--green)';
+  }
+}
+
+/* ── Transaction type ── */
+function onTxTypeChange(val){
+  const panel = document.getElementById('depPanel');
+  if(val === 'Paid from Deposit'){
+    panel.classList.add('show');
+  } else {
+    panel.classList.remove('show');
+    document.getElementById('depCustomerName').value = '';
+    document.getElementById('depBalance').value = '';
+    document.getElementById('depWarn').classList.remove('show');
+  }
+}
+
+/* ── Deposit lookup in cashier ── */
+function onDepNameInput(val){
+  const warn = document.getElementById('depWarn');
+  if(!val.trim()){ warn.classList.remove('show'); return; }
+  const deps  = (typeof getDeposits === 'function') ? getDeposits() : [];
+  const found = deps.find(d => d.name.toLowerCase() === val.trim().toLowerCase() && d.remaining > 0);
+  if(found){
+    document.getElementById('depBalance').value = found.remaining;
+    warn.classList.remove('show');
+  } else {
+    warn.className   = 'dep-warn show';
+    warn.textContent = '\u26a0 No active deposit found for this name. You can still enter a balance manually.';
+  }
+}
+
+function onDepBalInput(val){
+  const warn  = document.getElementById('depWarn');
+  const name  = (document.getElementById('depCustomerName').value||'').trim().toLowerCase();
+  const deps  = (typeof getDeposits === 'function') ? getDeposits() : [];
+  const found = deps.find(d => d.name.toLowerCase() === name && d.remaining > 0);
+  if(found && parseFloat(val) > found.remaining){
+    warn.className   = 'dep-warn show';
+    warn.textContent = '\u26a0 Entered balance exceeds actual deposit of \u20b3'+Number(found.remaining).toLocaleString('en-GH')+'.';
+  } else {
+    warn.classList.remove('show');
+  }
+}
+
+/* Close modals on backdrop click */
+document.addEventListener('click', e => {
+  ['priceModal','exportModal','pmPayModal','sheetsConnectModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && e.target === el) el.classList.remove('open');
+  });
+});
+
+/* ══════════════════════════════════════════════
+   PERSISTENT DATA ENGINE — localStorage
+   All data is real. Nothing is seeded.
+══════════════════════════════════════════════ */
+
+function fmt(n){ return '₵'+Number(n||0).toLocaleString('en-GH',{minimumFractionDigits:0}); }
+
+/* ══════════════════════════════════════════════════════════
+   GOOGLE SHEETS INTEGRATION
+   Set SCRIPT_URL to your deployed Apps Script Web App URL
+   Leave empty to use local-only mode (localStorage fallback)
+══════════════════════════════════════════════════════════ */
+let SCRIPT_URL = localStorage.getItem('pcl_script_url') || '';
+
+/* ── Local cache (always kept in sync) ── */
+function loadData(key){ try{ return JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ return []; } }
+function saveData(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+function getSales(){    return loadData('pcl_sales'); }
+function getExpenses(){ return loadData('pcl_expenses'); }
+function getDebtors(){  return loadData('pcl_debtors'); }
+function getDeposits(){ return loadData('pcl_deposits'); }
+
+/* ── API helper — uses GET+params to avoid CORS preflight ── */
+async function apiPost(payload){
+  if(!SCRIPT_URL) return null;
+  try{
+    const action = payload.action;
+    const data   = encodeURIComponent(JSON.stringify(payload));
+    const url    = `${SCRIPT_URL}?action=${action}&data=${data}`;
+    const r      = await fetch(url);
+    return await r.json();
+  } catch(err){
+    console.warn('Sheets API error:', err);
+    return null;
+  }
+}
+
+/* ── Pull live data from Sheets → update local cache ── */
+async function syncFromSheets(){
+  if(!SCRIPT_URL){ updateSyncBadge('local'); return; }
+  updateSyncBadge('syncing');
+  try{
+    const r = await fetch(SCRIPT_URL + '?action=read');
+    const d = await r.json();
+    if(!d.ok){ updateSyncBadge('error'); return; }
+
+    /* Map sheets data into local format */
+    const sales = (d.sales||[]).map((s,i) => ({
+      id: 'gs_s_'+i, date: s.date,
+      time: '', customer: s.customer, contact: s.contact,
+      txType: s.txType||'Sale', notes: s.notes||'',
+      paid: Number(s.paid)||0, owing: Number(s.owing)||0,
+      total: Number(s.total)||0,
+      items:[{code:s.code,name:s.item,qty:Number(s.qty)||1,price:Number(s.price)||0,cat:s.sheet,baleType:''}]
+    }));
+    const expenses = (d.expenses||[]).map((e,i) => ({
+      id:'gs_e_'+i, date:e.date, time:'',
+      type:e.type, payee:e.payee, amount:Number(e.amount)||0, notes:e.notes||''
+    }));
+    const debtors = (d.debtors||[]).map((dbt,i) => ({
+      id:'gs_d_'+i, date:dbt.date, name:dbt.customer, contact:'',
+      balance:Number(dbt.balance)||0, notes:dbt.type||'',payments:[]
+    }));
+    const deposits = (d.deposits||[]).map((dep,i) => ({
+      id:'gs_dep_'+i, date:dep.date, name:dep.customer, contact:'',
+      amount:Number(dep.amount)||0, remaining:Number(dep.remaining)||0
+    }));
+
+    saveData('pcl_sales',    sales);
+    saveData('pcl_expenses', expenses);
+    saveData('pcl_debtors',  debtors);
+    saveData('pcl_deposits', deposits);
+    refreshStats();
+    updateSyncBadge('synced');
+  } catch(err){
+    console.warn('Sync error:', err);
+    updateSyncBadge('error');
+  }
+}
+
+function updateSyncBadge(state){
+  const badge = document.getElementById('syncBadge');
+  const dot   = document.getElementById('syncDot');
+  const lbl   = document.getElementById('syncLbl');
+  if(!badge) return;
+  const states = {
+    local:   { color:'rgba(255,255,255,.3)', dot:'#888',   text:'Local only' },
+    syncing: { color:'rgba(255,159,10,.6)',  dot:'#FF9F0A', text:'Syncing…'   },
+    synced:  { color:'rgba(52,199,89,.6)',   dot:'#34C759', text:'Synced'     },
+    error:   { color:'rgba(255,107,107,.6)', dot:'#FF6B6B', text:'Sync error' },
+  };
+  const s = states[state] || states.local;
+  badge.style.borderColor = s.color;
+  badge.style.color       = s.color;
+  dot.style.background    = s.dot;
+  lbl.textContent         = s.text;
+}
+
+/* ── Connect / disconnect Sheets ── */
+function openSheetsConnect(){
+  document.getElementById('sheetsConnectModal').classList.add('open');
+  document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+}
+function saveSheetsUrl(){
+  const url = document.getElementById('scriptUrlInput').value.trim();
+  SCRIPT_URL = url;
+  localStorage.setItem('pcl_script_url', url);
+  closeModal('sheetsConnectModal');
+  if(url){ syncFromSheets(); }
+  else { updateSyncBadge('local'); }
+}
+function disconnectSheets(){
+  SCRIPT_URL = '';
+  localStorage.removeItem('pcl_script_url');
+  closeModal('sheetsConnectModal');
+  updateSyncBadge('local');
+}
+
+/* ── DATE helpers ── */
+function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function sameDay(iso,d){ return iso===isoOf(d); }
+
+/* ── REFRESH ALL ── */
+function refreshStats(){
+  const allSales    = getSales();
+  const allExp      = getExpenses();
+  const allDebtors  = getDebtors();
+  const allDeposits = getDeposits();
+  const sessISO     = isoOf(sess);
+
+  const daySales    = allSales.filter(s=>s.date===sessISO);
+  const dayExp      = allExp.filter(e=>e.date===sessISO);
+
+  const totalSales  = daySales.reduce((t,s)=>t+s.total,0);
+  const totalColl   = daySales.reduce((t,s)=>t+(s.paid||0),0);
+  const totalOwing  = daySales.reduce((t,s)=>t+(s.owing||0),0);
+  const totalExp    = dayExp.reduce((t,e)=>t+e.amount,0);
+  const bankDeposit = Math.max(0, totalColl - totalExp);
+
+  const unpaidDebtors = allDebtors.filter(d=>d.balance>0);
+  const totalDebts  = unpaidDebtors.reduce((t,d)=>t+d.balance,0);
+  const liveDeposits = allDeposits.filter(d=>d.remaining>0);
+  const totalDep    = liveDeposits.reduce((t,d)=>t+d.remaining,0);
+
+  /* Hub status bar */
+  document.getElementById('statSales').textContent     = fmt(totalSales);
+  document.getElementById('statSalesMeta').textContent = daySales.length+' txns';
+  document.getElementById('statCollected').textContent = fmt(totalColl);
+  document.getElementById('statDebts').textContent     = fmt(totalDebts);
+  document.getElementById('statDebtsMeta').textContent = unpaidDebtors.length+' debtors';
+  document.getElementById('statExpenses').textContent  = fmt(totalExp);
+  document.getElementById('statExpensesMeta').textContent = dayExp.length+' entries';
+  document.getElementById('statBank').textContent      = fmt(bankDeposit);
+
+  /* Dashboard KPI cards */
+  document.getElementById('dbSales').textContent       = fmt(totalSales);
+  document.getElementById('dbSalesSub').textContent    = daySales.length+' transactions recorded';
+  document.getElementById('dbCollected').textContent   = fmt(totalColl);
+  document.getElementById('dbCollectedSub').textContent= 'amount collected today';
+  document.getElementById('dbDebts').textContent       = fmt(totalDebts);
+  document.getElementById('dbDebtsSub').textContent    = unpaidDebtors.length+' active debtors';
+  document.getElementById('dbExpenses').textContent    = fmt(totalExp);
+  document.getElementById('dbExpensesSub').textContent = dayExp.length+' expense entries';
+  document.getElementById('dbDeposits').textContent    = fmt(totalDep);
+  document.getElementById('dbDepositsSub').textContent = liveDeposits.length+' customers';
+  document.getElementById('dbBank').textContent        = fmt(bankDeposit);
+
+  renderActivity(daySales, dayExp);
+  renderDebtorPanel(unpaidDebtors);
+  renderDepositPanel(liveDeposits);
+  renderSalesLog(daySales);
+  renderExpensesPanel(dayExp);
+  renderStockStreams();
+}
+
+/* ── ACTIVITY FEED ── */
+function renderActivity(daySales, dayExp){
+  const items = [];
+  daySales.forEach(s=>{
+    items.push({time:s.time||'—', label:s.items.map(i=>i.name+' ×'+i.qty).join(', '), sheet:'📝 Sales Entry', amt:s.total, dot:'bl'});
+  });
+  dayExp.forEach(e=>{
+    items.push({time:e.time||'—', label:'Expense — '+e.type, sheet:'💸 Expenses Entry', amt:e.amount, dot:'am'});
+  });
+  items.sort((a,b)=>a.time.localeCompare(b.time));
+  if(!items.length){
+    document.getElementById('activityList').innerHTML='<div style="font-size:12px;color:var(--text3);padding:12px 0;">No activity yet today. Start by recording a sale.</div>';
+    return;
+  }
+  document.getElementById('activityList').innerHTML = items.map(it=>`
+    <div class="ai">
+      <div class="ai-top"><span class="a-dot ${it.dot}"></span><span class="a-time">${it.time}</span></div>
+      <div class="a-main">${it.label}</div>
+      <div class="a-sub">→ ${it.sheet}</div>
+      <div style="text-align:right;margin-top:4px;"><span class="a-amt" style="color:${it.dot==='bl'?'var(--blue)':'var(--amber)'};">${fmt(it.amt)}</span></div>
+    </div>`).join('');
+}
+
+/* ── SALES LOG (dashboard) ── */
+function renderSalesLog(daySales){
+  document.getElementById('salesLogCount').textContent = daySales.length+' entries';
+  if(!daySales.length){
+    document.getElementById('salesLogList').innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;">No sales recorded yet today.</div>';
+    return;
+  }
+  document.getElementById('salesLogList').innerHTML = daySales.map(s=>`
+    <div class="sales-row">
+      <span class="sale-dot" style="background:var(--blue)"></span>
+      <div class="sale-item">
+        <div class="sale-name">${s.customer||'(no name)'}</div>
+        <div class="sale-meta">${s.items.map(i=>i.code+' · '+i.name+' ×'+i.qty).join(' | ')} · ${s.txType||'Sale'}</div>
+      </div>
+      <span class="sale-total">${fmt(s.total)}</span>
+    </div>`).join('');
+}
+
+/* ── DEBTORS PANEL (dashboard) ── */
+function renderDebtorPanel(unpaid){
+  const rows = [...unpaid].sort((a,b)=>b.balance-a.balance);
+  document.getElementById('debtorCount').textContent = rows.length+' active';
+  document.getElementById('debtorTableBody').innerHTML = rows.map(d=>`<tr>
+    <td><div class="debtor-name">${d.name}</div><div class="debtor-contact">${d.contact||''}</div></td>
+    <td><span class="debt-amt">${fmt(d.balance)}</span></td>
+  </tr>`).join('') || '<tr><td colspan="2" style="color:var(--text3);font-size:12px;padding:8px;">No outstanding debts.</td></tr>';
+}
+
+/* ── DEPOSITS PANEL (dashboard) ── */
+function renderDepositPanel(live){
+  document.getElementById('depositCount').textContent = live.length+' held';
+  document.getElementById('depositList').innerHTML = live.map(p=>`
+    <div class="dep-row">
+      <div><div class="dep-name">${p.name}</div><div class="dep-date">${p.contact||''}</div></div>
+      <span class="dep-amt">${fmt(p.remaining)}</span>
+    </div>`).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px 0;">No deposits held.</div>';
+}
+
+/* ── EXPENSES PANEL (dashboard) ── */
+function renderExpensesPanel(dayExp){
+  const total = dayExp.reduce((t,e)=>t+e.amount,0);
+  document.getElementById('expensesTotalLabel').textContent = fmt(total)+' today';
+  document.getElementById('expensesList').innerHTML = dayExp.map(e=>`
+    <div class="exp-row">
+      <div class="exp-row-left"><span class="exp-dot" style="background:var(--amber)"></span>
+        <div><div class="exp-type">${e.type}</div><div class="exp-paid">Paid to: ${e.payee||'—'}</div></div>
+      </div>
+      <span class="exp-amt">${fmt(e.amount)}</span>
+    </div>`).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px;">No expenses logged today.</div>';
+}
+
+/* ── STOCK STREAMS (dashboard) — real sold qty from sales ── */
+function renderStockStreams(){
+  const allSales = getSales();
+  /* Build sold-qty map: code → total qty sold */
+  const soldMap = {};
+  allSales.forEach(s=>s.items.forEach(i=>{ soldMap[i.code]=(soldMap[i.code]||0)+i.qty; }));
+
+  ['Champion','Super'].forEach(bale=>{
+    const items = ITEMS.filter(i=>i.baleType===bale);
+    document.getElementById('stockCanada'+bale).innerHTML = items.map(item=>{
+      const sold = soldMap[item.code]||0;
+      const stk  = loadStockBase(item.code);
+      const rem  = stk - sold;
+      const color = rem<=0?'var(--red)':rem<=5?'var(--amber)':'var(--blue)';
+      return `<div class="stream-row">
+        <span class="stream-code">${item.code}</span>
+        <span class="stream-name">${item.name}</span>
+        <span class="stream-qty" style="color:${color}">${rem<=0?'OUT':rem}</span>
+      </div>`;
+    }).join('');
+  });
+
+  const ghanaItems = ITEMS.filter(i=>i.cat==='Ghana');
+  document.getElementById('stockGhana').innerHTML = ghanaItems.map(item=>{
+    const sold=soldMap[item.code]||0; const stk=loadStockBase(item.code); const rem=stk-sold;
+    const color=rem<=0?'var(--red)':rem<=5?'var(--amber)':'var(--green)';
+    return `<div class="stream-row"><span class="stream-code">${item.code}</span><span class="stream-name">${item.name}</span><span class="stream-qty" style="color:${color}">${rem<=0?'OUT':rem}</span></div>`;
+  }).join('');
+
+  ['Prince','HUK'].forEach(type=>{
+    const items=ITEMS.filter(i=>(i.cat==='Supply - Prince'&&type==='Prince')||(i.cat==='Supply - HUK'&&type==='HUK'));
+    document.getElementById('stockSupply'+type).innerHTML = items.map(item=>{
+      const sold=soldMap[item.code]||0; const stk=loadStockBase(item.code); const rem=stk-sold;
+      const color=rem<=0?'var(--red)':rem<=5?'var(--amber)':'var(--purple)';
+      return `<div class="stream-row"><span class="stream-code">${item.code}</span><span class="stream-name">${item.name}</span><span class="stream-qty" style="color:${color}">${rem<=0?'OUT':rem}</span></div>`;
+    }).join('');
+  });
+  const supplyTotal=ITEMS.filter(i=>i.cat==='Supply - Prince'||i.cat==='Supply - HUK').length;
+  document.getElementById('supplyStockCount').textContent=supplyTotal+' types';
+}
+
+/* stock base levels stored per-item, editable */
+function loadStockBase(code){
+  const bases = JSON.parse(localStorage.getItem('pcl_stock_bases')||'{}');
+  return bases[code]||0;
+}
+function saveStockBase(code,qty){
+  const bases = JSON.parse(localStorage.getItem('pcl_stock_bases')||'{}');
+  bases[code]=qty;
+  localStorage.setItem('pcl_stock_bases',JSON.stringify(bases));
+}
+
+/* ══════════════════════════════════════════
+   CASHIER — CONFIRM SALE
+══════════════════════════════════════════ */
+async function confirmSale(){
+  if(!cart.length) return;
+  const name    = document.getElementById('custName').value||'(no name)';
+  const contact = document.getElementById('custContact').value||'';
+  const txType  = document.getElementById('txType').value;
+  const notes   = document.getElementById('custNotes').value||'';
+  const paid    = parseFloat(document.getElementById('amtPaid').value)||0;
+  const sessISO = isoOf(sess);
+  const now     = new Date();
+  const timeStr = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const total   = cart.reduce((t,i)=>t+i.qty*i.price,0);
+  const owing   = Math.max(0,total-paid);
+
+  const saleRecord = {
+    id: Date.now(), date: sessISO, time: timeStr,
+    customer: name, contact, txType, notes, paid, owing, total,
+    items: cart.map(i=>({code:i.code,name:i.name,qty:i.qty,price:i.price,cat:i.cat,baleType:i.baleType||''})),
+  };
+
+  /* ── Local cache update ── */
+  if(txType==='Paid from Deposit'){
+    const depName = (document.getElementById('depCustomerName').value||'').trim().toLowerCase();
+    const deps = getDeposits();
+    const dep  = deps.find(d=>d.name.toLowerCase()===depName&&d.remaining>0);
+    if(dep){ dep.remaining=Math.max(0,dep.remaining-paid); saveData('pcl_deposits',deps); }
+  }
+  if(owing>0){
+    const debtors  = getDebtors();
+    const existing = debtors.find(d=>d.name.toLowerCase()===name.toLowerCase());
+    if(existing){ existing.balance+=owing; }
+    else{ debtors.push({id:Date.now()+1,name,contact,balance:owing,date:sessISO,notes}); }
+    saveData('pcl_debtors',debtors);
+  }
+  const sales = getSales(); sales.unshift(saleRecord); saveData('pcl_sales',sales);
+
+  /* ── Send to Google Sheets ── */
+  const sheetsOk = await apiPost({
+    action:'sale', date:sessISO, customer:name, contact,
+    txType, notes, paid, owing,
+    items: saleRecord.items,
+  });
+
+  /* ── Export modal ── */
+  const dateStr = fmtDate(sess);
+  const rows = cart.map(item=>{
+    const lineTotal=item.qty*item.price;
+    return [dateStr,name,contact,item.code,item.name,item.qty,item.price,lineTotal,paid,owing,txType,notes,item.baleType||'',item.cat];
+  });
+  exportedCSV=['Date,Customer Name,Contact,Item Code,Item Name,Qty Sold,Unit Price,Total Sales,Amt Paid,Amt Owing,Transaction Type,Notes,Bale Type,Category',
+    ...rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))].join('\n');
+
+  const thead=`<thead><tr>${['Date','Customer','Code','Item','Cat','Bale','Qty','Price','Total','Paid','Owing','Type'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
+  const tbody=`<tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[13]}</td><td>${r[12]||'—'}</td><td>${r[5]}</td><td>${fmt(r[6])}</td><td class="hl">${fmt(r[7])}</td><td>${r[8]?fmt(r[8]):''}</td><td>${r[9]?fmt(r[9]):''}</td><td>${r[10]}</td></tr>`).join('')}</tbody>`;
+  document.getElementById('emTable').innerHTML=thead+tbody;
+  const sheetMsg = sheetsOk&&sheetsOk.ok ? '✅ Saved to Google Sheets' : (SCRIPT_URL?'⚠ Sheets offline — saved locally':'📋 Copy CSV to paste into Google Sheets');
+  document.getElementById('emSub').textContent=`${rows.length} line${rows.length!==1?'s':''} saved ✓  ·  ${sheetMsg}`;
+  document.getElementById('exportModal').classList.add('open');
+  refreshStats();
+  if(sheetsOk&&sheetsOk.ok) updateSyncBadge('synced');
+}
+
+function copyCSV(){
+  navigator.clipboard.writeText(exportedCSV).then(()=>{
+    const btn=document.getElementById('emCopyBtn');
+    btn.textContent='✓ Copied!';btn.style.background='var(--green)';
+    setTimeout(()=>{btn.textContent='📋 Copy CSV — paste into Google Sheets';btn.style.background='';},2200);
+  });
+}
+
+function newSale(){
+  cart=[];
+  document.getElementById('custName').value='';
+  document.getElementById('custContact').value='';
+  document.getElementById('custNotes').value='';
+  document.getElementById('amtPaid').value='';
+  document.getElementById('txType').value='Sale';
+  document.getElementById('depPanel').classList.remove('show');
+  document.getElementById('depCustomerName').value='';
+  document.getElementById('depBalance').value='';
+  document.getElementById('depWarn').classList.remove('show');
+  closeModal('exportModal');
+  renderGrid();
+  renderCart();
+}
+
+/* ══════════════════════════════════════════
+   EXPENSES ENTRY
+══════════════════════════════════════════ */
+function openExpenses(){
+  showScreen('expensesScreen');
+  renderExpenseLog();
+}
+function expAmtInput(){
+  const v=parseFloat(document.getElementById('expAmount').value)||0;
+  document.getElementById('expSaveBtn').disabled=v<=0;
+}
+async function saveExpense(){
+  const type   = document.getElementById('expType').value;
+  const payee  = document.getElementById('expPayee').value||'';
+  const amount = parseFloat(document.getElementById('expAmount').value)||0;
+  const notes  = document.getElementById('expNotes').value||'';
+  if(amount<=0)return;
+  const now=new Date();
+  const timeStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const rec={id:Date.now(),date:isoOf(sess),time:timeStr,type,payee,amount,notes};
+  const exps=getExpenses(); exps.unshift(rec); saveData('pcl_expenses',exps);
+  document.getElementById('expAmount').value='';
+  document.getElementById('expPayee').value='';
+  document.getElementById('expNotes').value='';
+  document.getElementById('expSaveBtn').disabled=true;
+  renderExpenseLog();
+  refreshStats();
+  await apiPost({action:'expense', date:isoOf(sess), type, payee, amount, notes});
+  updateSyncBadge('synced');
+  triggerSync('Daily Expenses');
+}
+function renderExpenseLog(){
+  const sessISO=isoOf(sess);
+  const day=getExpenses().filter(e=>e.date===sessISO);
+  const el=document.getElementById('expLogList');
+  if(!el)return;
+  el.innerHTML=day.length?day.map(e=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${e.type}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${e.time} · ${e.payee||'—'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;color:var(--amber);">${fmt(e.amount)}</span>
+        <button onclick="deleteExpense(${e.id})" style="background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.25);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">×</button>
+      </div>
+    </div>`).join(''):'<div style="font-size:12px;color:var(--text3);padding:8px;">No expenses logged today.</div>';
+}
+function deleteExpense(id){
+  const exps=getExpenses().filter(e=>e.id!==id);
+  saveData('pcl_expenses',exps);
+  renderExpenseLog();
+  refreshStats();
+}
+
+/* ══════════════════════════════════════════
+   DEBTORS ENTRY
+══════════════════════════════════════════ */
+function openDebtors(){
+  showScreen('debtorsScreen');
+  renderDebtorsList();
+}
+function dbtAmtInput(){
+  const v=parseFloat(document.getElementById('dbtAmount').value)||0;
+  document.getElementById('dbtAddBtn').disabled=v<=0;
+}
+function addDebtor(){
+  const name   = document.getElementById('dbtName').value.trim();
+  const contact= document.getElementById('dbtContact').value.trim();
+  const amount = parseFloat(document.getElementById('dbtAmount').value)||0;
+  const notes  = document.getElementById('dbtNotes').value.trim();
+  if(!name||amount<=0)return;
+  const debtors=getDebtors();
+  const existing=debtors.find(d=>d.name.toLowerCase()===name.toLowerCase());
+  if(existing){ existing.balance+=amount; }
+  else{ debtors.push({id:Date.now(),date:isoOf(sess),name,contact,balance:amount,notes,payments:[]}); }
+  saveData('pcl_debtors',debtors);
+  document.getElementById('dbtName').value='';
+  document.getElementById('dbtContact').value='';
+  document.getElementById('dbtAmount').value='';
+  document.getElementById('dbtNotes').value='';
+  document.getElementById('dbtAddBtn').disabled=true;
+  renderDebtorsList();
+  refreshStats();
+  triggerSync('Debtors');
+}
+function logPayment(id){
+  const debtors = getDebtors();
+  const d = debtors.find(x => x.id === id);
+  if(!d) return;
+
+  /* Pre-populate the payment modal */
+  document.getElementById('pmDebtorName').textContent    = d.name;
+  document.getElementById('pmDebtorContact').textContent = d.contact ? '📞 ' + d.contact : '';
+  document.getElementById('pmDebtorBal').textContent     = fmt(d.balance);
+  document.getElementById('pmDebtorNotes').textContent   = d.notes || '';
+  document.getElementById('pmPayAmt').value              = '';
+  document.getElementById('pmPayChange').style.display   = 'none';
+  document.getElementById('pmPayBtn').disabled           = true;
+  document.getElementById('pmPayModal').dataset.id       = id;
+  document.getElementById('pmPayModal').classList.add('open');
+  setTimeout(() => document.getElementById('pmPayAmt').focus(), 80);
+}
+
+function onPayAmtInput(){
+  const id      = parseInt(document.getElementById('pmPayModal').dataset.id);
+  const debtors = getDebtors();
+  const d       = debtors.find(x => x.id === id);
+  const amt     = parseFloat(document.getElementById('pmPayAmt').value) || 0;
+  const btn     = document.getElementById('pmPayBtn');
+  const change  = document.getElementById('pmPayChange');
+  btn.disabled  = amt <= 0;
+  if(d && amt > d.balance){
+    change.style.display   = 'block';
+    change.textContent     = '⚠ Overpayment — Change due: ' + fmt(amt - d.balance);
+    change.style.color     = 'var(--amber)';
+  } else if(amt > 0) {
+    change.style.display   = 'block';
+    change.textContent     = 'Remaining after payment: ' + fmt(Math.max(0,(d?d.balance:0) - amt));
+    change.style.color     = 'var(--text3)';
+  } else {
+    change.style.display   = 'none';
+  }
+}
+
+async function confirmPayment(){
+  const id      = parseInt(document.getElementById('pmPayModal').dataset.id);
+  const amt     = parseFloat(document.getElementById('pmPayAmt').value) || 0;
+  if(amt <= 0) return;
+  const debtors = getDebtors();
+  const d       = debtors.find(x => x.id === id);
+  if(!d) return;
+  d.balance = Math.max(0, d.balance - amt);
+  if(!d.payments) d.payments = [];
+  d.payments.push({date: isoOf(sess), amt});
+  saveData('pcl_debtors', debtors);
+  document.getElementById('pmPayModal').classList.remove('open');
+  renderDebtorsList();
+  refreshStats();
+  await apiPost({action:'payment', customer:d.name, amount:amt, date:isoOf(sess)});
+  updateSyncBadge('synced');
+  triggerSync('Debtors');
+}
+function deleteDebtor(id){
+  if(!confirm('Remove this debtor entry?'))return;
+  saveData('pcl_debtors',getDebtors().filter(d=>d.id!==id));
+  renderDebtorsList();
+  refreshStats();
+}
+function renderDebtorsList(){
+  const el=document.getElementById('debtorsList');
+  if(!el)return;
+  const all=getDebtors().sort((a,b)=>b.balance-a.balance);
+  if(!all.length){ el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px;">No debtor entries yet.</div>'; return; }
+  el.innerHTML=all.map(d=>`
+    <div style="background:var(--surface);border:1px solid ${d.balance>0?'rgba(255,159,10,.25)':'rgba(52,199,89,.2)'};border-radius:14px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">${d.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${d.contact||''}${d.notes?' · '+d.notes:''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;color:${d.balance>0?'var(--amber)':'var(--green)'};">${fmt(d.balance)}</div>
+          <div style="font-size:10px;color:var(--text3);">${d.balance>0?'OUTSTANDING':'CLEARED'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        ${d.balance>0?`<button onclick="logPayment(${d.id})" style="flex:2;padding:7px;background:rgba(52,199,89,.14);border:1px solid rgba(52,199,89,.3);color:var(--green);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">💰 Log Payment</button>`:''}
+        <button onclick="deleteDebtor(${d.id})" style="flex:1;padding:7px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.2);color:var(--red);border-radius:8px;font-size:11px;cursor:pointer;">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   DEPOSITS ENTRY
+══════════════════════════════════════════ */
+function openDeposits(){
+  showScreen('depositsScreen');
+  renderDepositsList();
+}
+function depAmtInput(){
+  const v=parseFloat(document.getElementById('depAmt').value)||0;
+  document.getElementById('depSaveBtn').disabled=v<=0;
+}
+async function saveDeposit(){
+  const name   =document.getElementById('depName').value.trim();
+  const contact=document.getElementById('depContact').value.trim();
+  const amount =parseFloat(document.getElementById('depAmt').value)||0;
+  if(!name||amount<=0)return;
+  const deps=getDeposits();
+  deps.push({id:Date.now(),date:isoOf(sess),name,contact,amount,remaining:amount});
+  saveData('pcl_deposits',deps);
+  document.getElementById('depName').value='';
+  document.getElementById('depContact').value='';
+  document.getElementById('depAmt').value='';
+  document.getElementById('depSaveBtn').disabled=true;
+  renderDepositsList();
+  refreshStats();
+  await apiPost({action:'deposit', date:isoOf(sess), customer:name, amount, type:'Canada'});
+  updateSyncBadge('synced');
+  triggerSync('Deposits');
+}
+async function useDeposit(id){
+  const amt=parseFloat(prompt('Amount used from deposit (₵):')||'0');
+  if(!amt||amt<=0)return;
+  const deps=getDeposits();
+  const d=deps.find(x=>x.id===id);
+  if(!d)return;
+  d.remaining=Math.max(0,d.remaining-amt);
+  saveData('pcl_deposits',deps);
+  renderDepositsList();
+  refreshStats();
+}
+function deleteDeposit(id){
+  if(!confirm('Remove this deposit entry?'))return;
+  saveData('pcl_deposits',getDeposits().filter(d=>d.id!==id));
+  renderDepositsList();
+  refreshStats();
+}
+function renderDepositsList(){
+  const el=document.getElementById('depositEntriesList');
+  if(!el)return;
+  const all=getDeposits().sort((a,b)=>b.remaining-a.remaining);
+  if(!all.length){ el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px;">No deposit entries yet.</div>'; return; }
+  el.innerHTML=all.map(d=>`
+    <div style="background:var(--surface);border:1px solid ${d.remaining>0?'rgba(167,139,250,.25)':'rgba(100,116,139,.2)'};border-radius:14px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">${d.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${d.contact||''} · Added ${d.date||''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;color:${d.remaining>0?'var(--purple)':'var(--text3)'};">${fmt(d.remaining)}</div>
+          <div style="font-size:10px;color:var(--text3);">of ${fmt(d.amount)} original</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        ${d.remaining>0?`<button onclick="useDeposit(${d.id})" style="flex:2;padding:7px;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.3);color:var(--purple);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">💵 Use Deposit</button>`:''}
+        <button onclick="deleteDeposit(${d.id})" style="flex:1;padding:7px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.2);color:var(--red);border-radius:8px;font-size:11px;cursor:pointer;">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════════════════ */
+const ALL_SCREENS=['homeScreen','cashierScreen','expensesScreen','debtorsScreen','depositsScreen'];
+function showScreen(id){
+  ALL_SCREENS.forEach(s=>{
+    const el=document.getElementById(s);
+    if(el) el.classList.toggle('hidden', s!==id);
+  });
+}
+
+function openCashier(startTab){
+  if(startTab) activeTab=startTab;
+  showScreen('cashierScreen');
+  document.querySelectorAll('.cat-tab-btn').forEach(b=>b.className='cat-tab-btn');
+  const tabMap={Super:'ac-super',Champion:'ac-champion',Ghana:'ac-ghana',Supply:'ac-supply'};
+  document.querySelectorAll('.cat-tab-btn').forEach(b=>{
+    const label=b.textContent.trim().toLowerCase();
+    if((activeTab==='Super'&&label.includes('super'))||(activeTab==='Champion'&&label.includes('champion'))||(activeTab==='Ghana'&&label.includes('ghana'))||(activeTab==='Supply'&&label.includes('supply'))){
+      b.className='cat-tab-btn '+(tabMap[activeTab]||'');
+    }
+  });
+  renderGrid();
+}
+function goHome(){
+  showScreen('homeScreen');
+  refreshStats();
+}
+
+/* ── TOAST ── */
+let toastT;
+function triggerSync(sheet){
+  clearTimeout(toastT);
+  const t=document.getElementById('toast');
+  document.getElementById('toastSheet').textContent=sheet;
+  t.classList.add('show');
+  toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ── SKU SYNC ── */
+const DEFAULT_ITEMS=JSON.parse(JSON.stringify(ITEMS));
+
+function toggleSheetsGuide(){
+  const panel=document.getElementById('sheetsGuidePanel');
+  const arr=document.getElementById('sheetsGuideArr');
+  const open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  arr.textContent=open?'›':'↓';
+  if(!open){ document.getElementById('skuSyncPanel').style.display='none'; document.getElementById('skuSyncArr').textContent='›'; }
+}
+function toggleSkuPanel(){
+  const panel=document.getElementById('skuSyncPanel');
+  const arr=document.getElementById('skuSyncArr');
+  const open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  arr.textContent=open?'›':'↓';
+}
+function applySkuPaste(){
+  const raw=document.getElementById('skuPasteBox').value.trim();
+  if(!raw)return;
+  const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  const sep=lines[0].includes('\t')?'\t':',';
+  const parsed=[]; let skipped=0;
+  lines.forEach((line,idx)=>{
+    const cols=line.split(sep).map(c=>c.trim().replace(/^"|"$/g,''));
+    if(idx===0&&cols[0].toLowerCase()==='code')return;
+    const[code,name,cat,baleOrSupply,grpOrSupplier]=cols;
+    if(!code||!name||!cat){skipped++;return;}
+    const item={code,name,cat};
+    if(cat==='Super Canada')    item.baleType='Super';
+    if(cat==='Champion Canada') item.baleType='Champion';
+    if(cat==='Supply - Prince') item.supplyType='Prince';
+    if(cat==='Supply - HUK')    item.supplyType='HUK';
+    if(baleOrSupply&&cat.includes('Canada')) item.baleType=baleOrSupply;
+    if(baleOrSupply&&cat==='Supply')         item.supplyType=baleOrSupply;
+    if(cat==='Super Canada'||cat==='Champion Canada'){
+      const grpMap={M:'Mens',L:'Ladies',G:'General',K:'Children',H:'Household'};
+      const prefix=code.split('-')[1]?.[0]?.toUpperCase();
+      item.grp=grpOrSupplier||grpMap[prefix]||'General';
+    }
+    parsed.push(item);
+  });
+  if(!parsed.length){
+    document.getElementById('skuSyncStatus').textContent='⚠️ No valid rows found.';
+    document.getElementById('skuSyncStatus').style.color='var(--red)';
+    return;
+  }
+  ITEMS.length=0; parsed.forEach(i=>ITEMS.push(i));
+  refreshTabCounts(); renderGrid(); renderStockStreams();
+  document.getElementById('skuSyncStatus').textContent=`✓ ${parsed.length} items loaded${skipped?', '+skipped+' skipped':''}`;
+  document.getElementById('skuSyncStatus').style.color='var(--green)';
+  setTimeout(()=>document.getElementById('skuSyncStatus').textContent='',4000);
+}
+function resetSkus(){
+  ITEMS.length=0; DEFAULT_ITEMS.forEach(i=>ITEMS.push({...i}));
+  document.getElementById('skuPasteBox').value='';
+  refreshTabCounts(); renderGrid(); renderStockStreams();
+  document.getElementById('skuSyncStatus').textContent='↩ Reset to defaults';
+  document.getElementById('skuSyncStatus').style.color='var(--text2)';
+  setTimeout(()=>document.getElementById('skuSyncStatus').textContent='',3000);
+}
+function refreshTabCounts(){
+  document.getElementById('countSuper').textContent    =ITEMS.filter(i=>i.baleType==='Super'||i.cat==='Super Canada').length+' items';
+  document.getElementById('countChampion').textContent =ITEMS.filter(i=>i.baleType==='Champion'||i.cat==='Champion Canada').length+' items';
+  document.getElementById('countGhana').textContent    =ITEMS.filter(i=>i.cat==='Ghana').length+' items';
+  document.getElementById('countSupply').textContent   =ITEMS.filter(i=>i.cat==='Supply - Prince'||i.cat==='Supply - HUK').length+' items';
+}
+
+/* ── HUB MENU CARD NAVIGATION ── */
+/* Wire the menu cards in the hub to the new screens */
+function hubNav(screen){
+  if(screen==='cashier') openCashier();
+  else if(screen==='expenses') openExpenses();
+  else if(screen==='debtors')  openDebtors();
+  else if(screen==='deposits') openDeposits();
+}
+
+/* ── INIT ── */
+refreshTabCounts();
+refreshDate();
+renderCart();
+updateSyncBadge(SCRIPT_URL ? 'syncing' : 'local');
+if(SCRIPT_URL) syncFromSheets();
+</script>
+
+<!-- ════════ EXPENSES SCREEN ════════ -->
+<div class="screen hidden" id="expensesScreen">
+  <nav>
+    <div class="brand"><div class="logo">PCL</div><div><div class="brand-name">Pocoloco Enterprise</div><div class="brand-sub">Kumasi</div></div></div>
+    <span class="cashier-nav-badge" style="margin-left:20px;background:rgba(255,159,10,.14);border-color:rgba(255,159,10,.3);color:var(--amber);">💸 Expenses</span>
+    <div class="nav-right"><button class="back-btn" onclick="goHome()">← Hub</button></div>
+  </nav>
+  <div style="flex:1;overflow-y:auto;padding:24px 28px 60px;max-width:660px;margin:0 auto;">
+    <div class="pg-head r0"><h1>Log <em style="color:var(--amber)">Expense</em></h1><p>Record transport, staff funds, and other spending.</p></div>
+    <div class="r1" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:24px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <div class="pm-lbl">TYPE</div>
+          <select class="field-sel" id="expType" style="width:100%;">
+            <option>Funds given to Mr. Kwakye</option>
+            <option>Funds given to Mrs. Kwakye</option>
+            <option>Funds given to Barwumiah</option>
+            <option>Funds given to Emmanuel</option>
+            <option>Driver / Transport</option>
+            <option>Utility / Electricity</option>
+            <option>Hospital / Medical</option>
+            <option>Maintenance / Repairs</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <div class="pm-lbl">PAID TO</div>
+          <input class="field" id="expPayee" placeholder="Name / recipient" style="width:100%;"/>
+        </div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div class="pm-lbl">AMOUNT (₵)</div>
+        <input class="pm-price-inp" id="expAmount" type="number" placeholder="e.g. 500" style="width:100%;margin-bottom:0;" oninput="expAmtInput()"/>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="pm-lbl">NOTES (optional)</div>
+        <textarea class="notes-inp" id="expNotes" rows="2" placeholder="Any notes…"></textarea>
+      </div>
+      <button class="confirm-btn" id="expSaveBtn" onclick="saveExpense()" style="background:var(--amber);" disabled>💸  Save Expense</button>
+    </div>
+    <div class="r2">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;">TODAY'S EXPENSES</div>
+      <div id="expLogList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ DEBTORS SCREEN ════════ -->
+<div class="screen hidden" id="debtorsScreen">
+  <nav>
+    <div class="brand"><div class="logo">PCL</div><div><div class="brand-name">Pocoloco Enterprise</div><div class="brand-sub">Kumasi</div></div></div>
+    <span class="cashier-nav-badge" style="margin-left:20px;background:rgba(255,159,10,.14);border-color:rgba(255,159,10,.3);color:var(--amber);">📒 Debtors / Payments</span>
+    <div class="nav-right"><button class="back-btn" onclick="goHome()">← Hub</button></div>
+  </nav>
+  <div style="flex:1;overflow-y:auto;padding:24px 28px 60px;max-width:740px;margin:0 auto;">
+    <div class="pg-head r0"><h1>📒 <em style="color:var(--amber)">Debtors</em></h1><p>Record credit sales and log payments received.</p></div>
+    <div class="r1" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.5px;text-transform:uppercase;">NEW CREDIT ENTRY</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div><div class="pm-lbl">CUSTOMER NAME</div><input class="field" id="dbtName" placeholder="Full name" style="width:100%;"/></div>
+        <div><div class="pm-lbl">CONTACT</div><input class="field" id="dbtContact" placeholder="Phone number" style="width:100%;"/></div>
+        <div><div class="pm-lbl">AMOUNT OWED (₵)</div><input class="field" id="dbtAmount" type="number" placeholder="0" style="width:100%;font-size:16px;font-weight:700;" oninput="dbtAmtInput()"/></div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="pm-lbl">NOTES (item, category, etc.)</div>
+        <input class="field" id="dbtNotes" placeholder="e.g. Champion Bale — Mens shirts × 3" style="width:100%;"/>
+      </div>
+      <button class="confirm-btn" id="dbtAddBtn" onclick="addDebtor()" style="background:var(--amber);" disabled>📒  Add Credit Entry</button>
+    </div>
+    <div class="r2" id="debtorsList" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- ════════ DEPOSITS SCREEN ════════ -->
+<div class="screen hidden" id="depositsScreen">
+  <nav>
+    <div class="brand"><div class="logo">PCL</div><div><div class="brand-name">Pocoloco Enterprise</div><div class="brand-sub">Kumasi</div></div></div>
+    <span class="cashier-nav-badge" style="margin-left:20px;background:rgba(167,139,250,.14);border-color:rgba(167,139,250,.3);color:var(--purple);">💵 Deposits</span>
+    <div class="nav-right"><button class="back-btn" onclick="goHome()">← Hub</button></div>
+  </nav>
+  <div style="flex:1;overflow-y:auto;padding:24px 28px 60px;max-width:660px;margin:0 auto;">
+    <div class="pg-head r0"><h1>💵 <em style="color:var(--purple)">Deposits</em></h1><p>Record advance payments and track what has been used.</p></div>
+    <div class="r1" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.5px;text-transform:uppercase;">RECORD NEW DEPOSIT</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div><div class="pm-lbl">CUSTOMER NAME</div><input class="field" id="depName" placeholder="Full name" style="width:100%;"/></div>
+        <div><div class="pm-lbl">CONTACT</div><input class="field" id="depContact" placeholder="Phone number" style="width:100%;"/></div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="pm-lbl">DEPOSIT AMOUNT (₵)</div>
+        <input class="pm-price-inp" id="depAmt" type="number" placeholder="e.g. 2000" style="width:100%;margin-bottom:0;" oninput="depAmtInput()"/>
+      </div>
+      <button class="confirm-btn" id="depSaveBtn" onclick="saveDeposit()" style="background:var(--purple);" disabled>💵  Save Deposit</button>
+    </div>
+    <div class="r2" id="depositEntriesList" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+<!-- PAYMENT MODAL -->
+<div class="modal-bg" id="pmPayModal">
+  <div class="modal-box" style="width:360px;max-width:95vw;">
+    <div style="font-size:10px;font-weight:700;color:var(--amber);letter-spacing:.9px;text-transform:uppercase;margin-bottom:10px;">💰 Log Payment</div>
+
+    <!-- Customer card — pre-populated, read-only -->
+    <div style="background:rgba(255,159,10,.07);border:1px solid rgba(255,159,10,.25);border-radius:12px;padding:14px 16px;margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--text);" id="pmDebtorName">—</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="pmDebtorContact"></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="pmDebtorNotes"></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.7px;text-transform:uppercase;">BALANCE DUE</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--amber);" id="pmDebtorBal">₵0</div>
+        </div>
+      </div>
+    </div>
+
+    <label class="pm-lbl">AMOUNT RECEIVED (₵)</label>
+    <input class="pm-price-inp" id="pmPayAmt" type="number" placeholder="e.g. 500" style="width:100%;margin-bottom:8px;" oninput="onPayAmtInput()"/>
+    <div id="pmPayChange" style="display:none;font-size:11px;padding:6px 10px;border-radius:7px;background:rgba(255,255,255,.05);margin-bottom:12px;"></div>
+
+    <div class="pm-actions">
+      <button class="pm-cancel" onclick="closeModal('pmPayModal')">Cancel</button>
+      <button class="pm-add" id="pmPayBtn" onclick="confirmPayment()" disabled style="background:var(--green);">✅ Confirm Payment</button>
+    </div>
+  </div>
+</div>
+<!-- SHEETS CONNECT MODAL -->
+<div class="modal-bg" id="sheetsConnectModal">
+  <div class="modal-box" style="width:500px;max-width:96vw;">
+    <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:.9px;text-transform:uppercase;margin-bottom:4px;">📊 Connect Google Sheets</div>
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">Link your Pocoloco spreadsheet for real-time sync</div>
+
+    <!-- Step guide -->
+    <div style="background:rgba(52,199,89,.05);border:1px solid rgba(52,199,89,.2);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:11px;color:var(--text2);line-height:2;">
+      <div style="font-weight:700;color:var(--green);margin-bottom:6px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;">Setup Steps (one-time)</div>
+      <div style="display:grid;grid-template-columns:18px 1fr;gap:2px 8px;">
+        <span style="color:var(--green);font-weight:800;">1</span><span>Open your spreadsheet in Google Drive</span>
+        <span style="color:var(--green);font-weight:800;">2</span><span>Click <strong>Extensions → Apps Script</strong></span>
+        <span style="color:var(--green);font-weight:800;">3</span><span>Delete everything there → paste the <strong>Pocoloco_AppScript.gs</strong> file contents</span>
+        <span style="color:var(--green);font-weight:800;">4</span><span>Click <strong>Deploy → New deployment → Web app</strong></span>
+        <span style="color:var(--green);font-weight:800;">5</span><span>Set <em>Execute as</em>: <strong>Me</strong> · <em>Who has access</em>: <strong>Anyone</strong> → Deploy</span>
+        <span style="color:var(--green);font-weight:800;">6</span><span>Copy the <strong>Web app URL</strong> → paste it below</span>
+      </div>
+    </div>
+
+    <label class="pm-lbl">YOUR WEB APP URL</label>
+    <input class="drop-inp" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;margin-bottom:16px;font-size:12px;"/>
+
+    <div style="display:flex;gap:8px;">
+      <button class="pm-cancel" onclick="disconnectSheets()" style="flex:1;color:var(--red);border-color:rgba(255,107,107,.3);">Disconnect</button>
+      <button class="pm-cancel" onclick="closeModal('sheetsConnectModal')" style="flex:1;">Cancel</button>
+      <button class="pm-add" onclick="saveSheetsUrl()" style="flex:2;background:var(--green);">🔗 Connect &amp; Sync</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
